@@ -1,0 +1,13 @@
+# Project specific
+_index
+*.log
+
+# Rust
+/target
+**/*.rs.bk
+
+# Mac
+.DS_Store
+
+# Jetbrains
+.idea/
