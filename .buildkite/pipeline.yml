@@ -1,0 +1,12 @@
+steps:
+
+- label: ":docker: Build app Docker image"
+  command: "docker push https://hub.docker.com/r/twilco/cratify/"
+  plugins:
+    docker-compose#v3.7.0:
+      build:
+        - app
+      image-repository: https://hub.docker.com/r/twilco/cratify/
+      image-name: cratify:latest
+      config:
+        - docker-compose.yml

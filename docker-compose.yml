@@ -2,6 +2,12 @@ version: '3.7'
 
 services:
 
+  app:
+    restart: always
+    build:
+      dockerfile: Dockerfile
+      context: .
+
   db:
     image: postgres:11-alpine
     ports:
