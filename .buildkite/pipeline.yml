@@ -10,3 +10,4 @@ steps:
         config:
           - docker-compose.yml
         image-repository: index.docker.io/twilco/cratify
+        image-name: cratify
