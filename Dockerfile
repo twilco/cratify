@@ -39,5 +39,6 @@ RUN rm -rf /var/lib/apt/lists/*
 COPY --from=build /cratify/target/release/cratify .
 
 EXPOSE 8000
+ENV ROCKET_ADDRESS 0.0.0.0
 # set the startup command to run your binary
 CMD ["./cratify"]

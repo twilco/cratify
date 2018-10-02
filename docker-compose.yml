@@ -6,6 +6,8 @@ services:
     build:
       dockerfile: Dockerfile
       context: .
+    ports:
+        - "8000:8000"
     restart: always
 
   db:
@@ -18,4 +20,7 @@ services:
     # Mount an initialization script and the persistent postgresql data volume
     volumes:
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ./database/data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
