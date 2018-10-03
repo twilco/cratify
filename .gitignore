@@ -11,3 +11,6 @@ _index
 
 # Jetbrains
 .idea/
+
+# General
+*.env
