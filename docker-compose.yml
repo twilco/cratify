@@ -6,21 +6,32 @@ services:
     build:
       dockerfile: Dockerfile
       context: .
+    labels:
+        - "traefik.frontend.rule=Host:cratify.app.localhost"
     ports:
+        # expose 8000 on host machine, and redirect that traffic to port 8000 in this container
         - "8000:8000"
     restart: always
 
   db:
-    expose:
-      - "5432"
     image: postgres:11-alpine
     ports:
+      # expose 5432 on host machine, and redirect that traffic to port 5432 in this container
       - "5432:5432"
     restart: always
     # Mount an initialization script and the persistent postgresql data volume
     volumes:
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
       - db_data:/var/lib/postgresql/data
+
+  reverse-proxy:
+    image: traefik # The official Traefik docker image
+    command: --api --docker # Enables the web UI and tells Træfik to listen to docker
+    ports:
+      - "80:80"     # The HTTP port
+      - "8080:8080" # The Web UI (enabled by --api)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
   db_data:
