@@ -1,6 +1,7 @@
 #![feature(plugin)]
 #![plugin(rocket_codegen)]
 
+use diesel::pg::PgConnection;
 use job_scheduler::{JobScheduler, Job};
 use rocket::Request;
 use slog::Drain;
@@ -20,7 +21,16 @@ fn not_found(_req: &Request) -> &'static str {
     "Route not found."
 }
 
-fn main() {
+fn main() -> Result<(), Box<std::error::Error>> {
+    let manager: diesel::r2d2::ConnectionManager<PgConnection> = diesel::r2d2::ConnectionManager::new(
+        dotenv::var("DATABASE_URL").expect("DATABASE_URL env variable is required")
+    );
+    let pool = r2d2::Pool::builder()
+        .max_size(15)
+        .build(manager)
+        .expect("Could not open database pool");
+
+    diesel_migrations::run_pending_migrations(&pool.get()?);
     // slog_stdlog uses the logger from slog_scope, so set a logger there
     let _guard = slog_scope::set_global_logger(build_logger());
 
@@ -37,6 +47,7 @@ fn main() {
     });
 
     rocket::ignite().catch(catchers![not_found]).mount("/", routes![index]).launch();
+    Ok(())
 }
 
 fn build_logger() -> slog::Logger {
