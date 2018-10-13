@@ -18,8 +18,11 @@ RUN apt-get purge curl 'libcurl*' -y
 RUN cargo build --release
 RUN rm src/*.rs
 
-# copy your source tree
+# copy our source tree
 COPY ./src ./src
+
+# and our migrations
+COPY ./migrations ./migrations
 
 # touch the real main.rs to prevent Docker from using the one created in `cargo new --bin cratify`
 RUN touch src/main.rs
@@ -31,7 +34,7 @@ RUN cargo build --release
 FROM debian:buster-slim
 
 RUN apt-get update
-RUN apt-get install -y --no-install-recommends ca-certificates libcurl4-openssl-dev openssl libssl-dev && rm -rf /var/lib/apt/lists/*
+RUN apt-get install -y --no-install-recommends ca-certificates libcurl4-openssl-dev openssl libssl-dev libpq-dev && rm -rf /var/lib/apt/lists/*
 
 # we've installed all the things we need, so we can now remove this to save some space
 RUN rm -rf /var/lib/apt/lists/*

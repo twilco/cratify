@@ -1,14 +1,30 @@
 # Developer's guide to the galaxy (or maybe just Cratify...)
 
-There are a lot of moving pieces that come together to make Cratify work.  This document will cover various aspects of development on Cratify, including setup, build, and run details, database management, interesting specifics about our Docker and Docker Compose workflow, and likely much more.
+There are a lot of moving pieces that come together to make Cratify work.  This document will cover various aspects of development on Cratify, including setup, build, run details, database management, interesting specifics about our Docker and Docker Compose workflow, and likely much more.
 
 ## Project setup
+
+1. Cratify uses Diesel, so having the Diesel CLI installed is handy.  See installation instructions [here](https://github.com/diesel-rs/diesel/tree/master/diesel_cli#installation).
+2. Ensure Docker and Docker Compose are installed.
+3. Run `git clone git@github.com:twilco/cratify.git`
 
 TODO
 
 ## How to run
 
+1. Run `docker-compose build && docker-compose up` - this will start our application, reverse proxy, and database.
+2. Go to <http://0.0.0.0:8080/dashboard/> to view your Traefik dashboard.  From there, you can see the URL your app is being served at (probably [cratify.app.localhost]()).
+3. When finished, run `docker-compose down`.
+
 TODO
+
+## Environments and deployment
+
+You can run cratify locally without Docker (although you will need to figure out the database on your own), locally with Docker and Docker Compose, and in production with Docker and Docker Compose.
+
+Regardless of environment, Cratify expects certain environment variable to be present (such as `CRATIFY_DATABASE_URL`).  
+
+When running locally without Docker, these should be set in `local.env`, which is checked into git.  When running locally with Docker, those environment variables should be set in `docker-local.env`, which is also checked into git.  When running in production with Docker and Docker Compose, environment variables should be set in `docker-prod.env`.  For this file, I have checked a `prod.env.template` file into git.  Update the environment variables, change the name to `docker-prod.env`, and you should be all set.  Docker Compose takes care of injecting these environment variables into our container for us, so our app has no trouble getting at them.
 
 ## Diesel and database migrations
 

@@ -1,8 +1,12 @@
 #![feature(plugin)]
 #![plugin(rocket_codegen)]
 
+#[macro_use]
+extern crate diesel_migrations;
+
 use diesel::pg::PgConnection;
-use job_scheduler::{JobScheduler, Job};
+
+use job_scheduler::{Job, JobScheduler};
 use rocket::Request;
 use slog::Drain;
 // Required by slog::o! - do not remove unless slog::o! has also been removed.
@@ -21,21 +25,47 @@ fn not_found(_req: &Request) -> &'static str {
     "Route not found."
 }
 
+// Embed migrations into the binary rather than requiring them to be run through some outside process.
+embed_migrations!("migrations");
+
 fn main() -> Result<(), Box<std::error::Error>> {
-    let manager: diesel::r2d2::ConnectionManager<PgConnection> = diesel::r2d2::ConnectionManager::new(
-        dotenv::var("DATABASE_URL").expect("DATABASE_URL env variable is required")
-    );
+    // slog_stdlog uses the logger from slog_scope, so set a logger there
+    let _guard = slog_scope::set_global_logger(build_logger());
+    // register slog_stdlog as the log handler with the log crate
+    slog_stdlog::init().unwrap();
+
+    // Use dotenv to load environment variables in to the system environment, so std::env can use
+    // them elsewhere in the application.  Only necessary when running locally outside of Docker -
+    // we use Docker Compose to load in the proper .env file in that situation
+    if let Err(err) = dotenv::from_filename("local.env") {
+        log::info!(
+            "error trying to load local.env.  this is probably not a problem if running in docker. err was: {}",
+            err
+        );
+    }
+
+    let manager: diesel::r2d2::ConnectionManager<PgConnection> =
+        diesel::r2d2::ConnectionManager::new(
+            std::env::var("CRATIFY_DATABASE_URL")
+                .expect("CRATIFY_DATABASE_URL env variable is required"),
+        );
     let pool = r2d2::Pool::builder()
         .max_size(15)
         .build(manager)
-        .expect("Could not open database pool");
+        .expect("could not open database pool");
 
-    diesel_migrations::run_pending_migrations(&pool.get()?);
-    // slog_stdlog uses the logger from slog_scope, so set a logger there
-    let _guard = slog_scope::set_global_logger(build_logger());
-
-    // register slog_stdlog as the log handler with the log crate
-    slog_stdlog::init().unwrap();
+    log::info!("checking for unrun migrations");
+    let mut migration_out = Vec::new();
+    embedded_migrations::run_with_output(&pool.get()?, &mut migration_out)
+        .expect("error running migrations");
+    if migration_out.len() > 0 {
+        log::info!(
+            "migrations run: \n{}",
+            String::from_utf8_lossy(&migration_out)
+        );
+    } else {
+        log::info!("no unran migrations found");
+    }
 
     thread::spawn(|| {
         log::info!("Initiating subscription fulfillment scheduler.");
@@ -46,7 +76,11 @@ fn main() -> Result<(), Box<std::error::Error>> {
         }
     });
 
-    rocket::ignite().catch(catchers![not_found]).mount("/", routes![index]).launch();
+    rocket::ignite()
+        .catch(catchers![not_found])
+        .mount("/", routes![index])
+        .launch();
+
     Ok(())
 }
 
@@ -80,9 +114,12 @@ fn build_subscription_scheduler() -> JobScheduler<'static> {
 }
 
 fn fulfill_subscriptions() {
-    log::info!("Attempting to retrieve or update crates.io index.");
-    if crates_index::Index::new::<&str>("_index".into()).retrieve_or_update().is_err() {
-        log::error!("Could not retrieve crates.io index.");
+    log::info!("attempting to retrieve or update crates.io index");
+    if crates_index::Index::new::<&str>("_index".into())
+        .retrieve_or_update()
+        .is_err()
+    {
+        log::error!("could not retrieve crates.io index");
     }
 
     // loop through each subscription, and fulfill if necessary

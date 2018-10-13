@@ -1,11 +1,15 @@
 version: '3.7'
 
 services:
-
   app:
     build:
       dockerfile: Dockerfile
       context: .
+    depends_on:
+      - db
+      - reverse-proxy
+    env_file:
+      - docker-local.env
     labels:
         - "traefik.frontend.rule=Host:cratify.app.localhost"
     ports:

@@ -13,4 +13,4 @@ _index
 .idea/
 
 # General
-*.env
+prod.env
