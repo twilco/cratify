@@ -47,6 +47,8 @@ db:
 
 Want more information?  [Check out this Stack Overflow post.](https://stackoverflow.com/questions/26598738/how-to-create-user-database-in-script-for-docker-postgres)
 
+We use the [diesel-derive-enum](https://github.com/adwhit/diesel-derive-enum) crate to support Postgres enums, since Diesel [does not support it out of the box :(](https://github.com/diesel-rs/diesel/issues/343).  This requires manual modification of [src/schema.rs](), which is tricky because that is what Diesel migrations are supposed to automatically handle for us.  Any changes we make to `schema.rs` will automatically be wiped out by Diesel CLI.  We get around this by giving Diesel a [src/schema.patch]() file, so after it overwrites our schema file it automatically applies the diff we provide.  This works, but means we may need to sometimes update this patch file with [create-schema-patch.sh]().
+
 ## Docker
 
 The [Dockerfile](/Dockerfile) itself is well documented, so if you want to know more about how that is built check it out.

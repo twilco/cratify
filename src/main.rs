@@ -1,8 +1,12 @@
 #![feature(plugin)]
 #![plugin(rocket_codegen)]
+#![allow(proc_macro_derive_resolution_fallback)]
 
 #[macro_use]
 extern crate diesel_migrations;
+
+#[macro_use]
+extern crate diesel;
 
 use diesel::pg::PgConnection;
 
@@ -14,6 +18,9 @@ use slog::kv;
 use std::fs::OpenOptions;
 use std::thread;
 use std::time::Duration;
+
+mod schema;
+mod models;
 
 #[get("/")]
 fn index() -> &'static str {

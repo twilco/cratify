@@ -1,0 +1,1 @@
+git diff -U6 src/schema.rs > src/schema.patch
