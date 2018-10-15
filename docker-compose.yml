@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3.3'
 
 services:
   app:
@@ -10,6 +10,7 @@ services:
       - reverse-proxy
     env_file:
       - docker-local.env
+    image: twilco/cratify
     labels:
         - "traefik.frontend.rule=Host:cratify.app.localhost"
     ports:

@@ -1,0 +1,20 @@
+sudo: required
+language: rust
+rust: nightly
+services:
+- docker
+cache: cargo
+script:
+- docker-compose build app
+after_success:
+- |
+  if [[ "$TRAVIS_BRANCH" == "master" ]]; then
+    # Log into Docker Hub.
+    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+    docker push twilco/cratify:latest
+  fi
+env:
+  global:
+  - secure: QeS0wsYpdEz12g9K0nOUv1w91/Oawy4h+8Io0gXe1lRpcSRskCha7RAP+es3Xda2Vesp7W8KjTpNLyMB3AjqDjxWnGOuV1oNZMqNigtKmx41cYtbTFaum2nqAYramfk68fUYuApzWVpKdsalGvXn6h+sQUJGhKynzYslECzCkEAkWZULRnDCXwzNeIXCMl+Im+eC7FHZIfMYNzFE2kKnevEezwRNW1GrcInmIe1Uj0TYmW3TAyvMUN+Vvnd/rtevnpFBr3VhiPsAgjjm1jYPRWdMe+EHHayHaIc/s6yE+qYpw/OZKBAlhaf/9Hdowvi7ZTGWlXlRFUVrs/HoJa3wMirwPexsxpmOqwlbC8RKNEeqEe9Bvt6KVwVvluCjXrHSC2Dg6G46pBVdSbGsjWeAbReHHHAa/VCVSaZMCRl/8NfWGqvUl0EKSDk2xPrJpnwEZlKozkJZPxIQJ1z6lcVQ/c4GdZcE/+2tGRfVl8PRkqjNnBw3g3tX3xTKdL86ffS0w0WLycwj2hDn09TnL6URR2EtZhs205ZgV3g1arjo/ID8Tf/AgYM/ySS3jcSAIYiD+YQ/YvXwCZYCy0Gxgtkb+mk/fHetFvns1C58nxcq0e5crqhv8So+Hs7YbIxiv/IBPKKp/LAEWxgZolhdNpAf/yGXwb11AFVuwJVWGawTrvs=
+  - secure: WGl43mObdcZyxKH36lgLOFTtADvvot9ziIuv+RiUh436zYUM6qofn+k/+z4HUl2BdhPMqyxuI0Z5b1DCzhvhUeEUicputSiHkuLEoSkzpdK4v2DCbqDd5GfpBSj2+raQNSAFvzzzskZv2EefmNyz3gQJtno5p1I9hUpFMmcOEQ9Ux+PVbUJj07cFeeWTwmxK/7uRDb+7Wf0vAbMgNM2QVt1VUDV++UIVa5GaevMV6HYoJ3JzeqJMFh6s9pnfkEiWn+v8gy8JytGTHFtZjg6zQLLEofBe3/xm1iERqN3mvW3DRYPAKWFXrnEPGHh93T1tPgx0ns8hvsvMeMA7d2J3h3JS8n02UQIjZJcDcR+Fyq7zgKlFNagljgX/aWHCSqTWu1KVSCWPDH4OB/Z0fwffH/EnTjaorsiWA5B3GH5Kw+Luuhxdjr7eDWMABB0N3iMNDeK5L51RH3iY2kBoKnQV+gNI9k0bdXqLr8rvOsVYYN+jBaACz0TpEQy87iNXRpRKbb3Nkw5SkyVqLq0R8fUsB8mQC9kUiHjppPM0Qf07m6til5QBML4ulqx58TgndrMEY0v7raRN5DHIre9Gp3Rfhy/tE7iE2RLqonNNeVcCZpss4jf/ykTjW1QnYyS7W7+ttr05NGEOQ2X8lqLQcaz+t+h2ZHaF9TfZfrabvDG8K44=
