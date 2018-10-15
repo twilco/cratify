@@ -19,8 +19,7 @@ use std::fs::OpenOptions;
 use std::thread;
 use std::time::Duration;
 
-mod schema;
-mod models;
+mod db;
 
 #[get("/")]
 fn index() -> &'static str {

@@ -1,10 +1,10 @@
 table! {
     use diesel::sql_types::Uuid;
-    use crate::models::PeriodicSubscriptionFrequencies;
+    use crate::db::models::PeriodicSubscriptionFrequencyMapping;
     periodic_subscriptions (periodic_subscription_id) {
         periodic_subscription_id -> Uuid,
         subscription_id -> Uuid,
-        frequency -> PeriodicSubscriptionFrequencies,
+        frequency -> PeriodicSubscriptionFrequencyMapping,
     }
 }
 
@@ -19,11 +19,11 @@ table! {
 
 table! {
     use diesel::sql_types::Uuid;
-    use crate::models::MeansOfTransportation;
+    use crate::db::models::MeansOfTransportationMapping;
     sent_means (sent_means_id) {
         sent_means_id -> Uuid,
         user_id -> Uuid,
-        means -> MeansOfTransportation,
+        means -> MeansOfTransportationMapping,
     }
 }
 
@@ -39,12 +39,12 @@ table! {
 table! {
     use diesel::sql_types::Uuid;
     use diesel::sql_types::Text;
-    use crate::models::SubscriptionType;
+    use crate::db::models::SubscriptionTypeMapping;
     subscriptions (subscription_id) {
         subscription_id -> Uuid,
         user_id -> Uuid,
         crate_name -> Text,
-        subscription_type -> SubscriptionType,
+        subscription_type -> SubscriptionTypeMapping,
     }
 }
 
