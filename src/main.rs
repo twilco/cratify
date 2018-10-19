@@ -1,3 +1,4 @@
+#![feature(custom_attribute)]
 #![feature(plugin)]
 #![plugin(rocket_codegen)]
 #![allow(proc_macro_derive_resolution_fallback)]
@@ -8,18 +9,22 @@ extern crate diesel_migrations;
 #[macro_use]
 extern crate diesel;
 
+#[macro_use]
+extern crate slog;
+
+#[macro_use]
+extern crate slog_scope;
+
 use diesel::pg::PgConnection;
 
 use job_scheduler::{Job, JobScheduler};
 use rocket::Request;
 use slog::Drain;
-// Required by slog::o! - do not remove unless slog::o! has also been removed.
-use slog::kv;
 use std::fs::OpenOptions;
 use std::thread;
 use std::time::Duration;
 
-mod db;
+pub(crate) mod db;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -39,12 +44,17 @@ fn main() -> Result<(), Box<std::error::Error>> {
     let _guard = slog_scope::set_global_logger(build_logger());
     // register slog_stdlog as the log handler with the log crate
     slog_stdlog::init().unwrap();
+    slog_scope::scope(&slog_scope::logger(), cratify);
 
+    Ok(())
+}
+
+fn cratify() {
     // Use dotenv to load environment variables in to the system environment, so std::env can use
     // them elsewhere in the application.  Only necessary when running locally outside of Docker -
     // we use Docker Compose to load in the proper .env file in that situation
     if let Err(err) = dotenv::from_filename("local.env") {
-        log::info!(
+        info!(
             "error trying to load local.env.  this is probably not a problem if running in docker. err was: {}",
             err
         );
@@ -60,21 +70,27 @@ fn main() -> Result<(), Box<std::error::Error>> {
         .build(manager)
         .expect("could not open database pool");
 
-    log::info!("checking for unrun migrations");
+    info!("checking for unrun migrations");
     let mut migration_out = Vec::new();
-    embedded_migrations::run_with_output(&pool.get()?, &mut migration_out)
-        .expect("error running migrations");
+    embedded_migrations::run_with_output(
+        &pool
+            .get()
+            .expect("could not get database conn from pool when running migrations"),
+        &mut migration_out,
+    )
+    .expect("error running migrations");
+
     if migration_out.len() > 0 {
-        log::info!(
+        info!(
             "migrations run: \n{}",
             String::from_utf8_lossy(&migration_out)
         );
     } else {
-        log::info!("no unran migrations found");
+        info!("no unran migrations found");
     }
 
     thread::spawn(|| {
-        log::info!("Initiating subscription fulfillment scheduler.");
+        info!("initiating subscription fulfillment scheduler.");
         let mut sched = build_subscription_scheduler();
         loop {
             sched.tick();
@@ -86,8 +102,6 @@ fn main() -> Result<(), Box<std::error::Error>> {
         .catch(catchers![not_found])
         .mount("/", routes![index])
         .launch();
-
-    Ok(())
 }
 
 fn build_logger() -> slog::Logger {
@@ -120,12 +134,12 @@ fn build_subscription_scheduler() -> JobScheduler<'static> {
 }
 
 fn fulfill_subscriptions() {
-    log::info!("attempting to retrieve or update crates.io index");
+    info!("attempting to retrieve or update crates.io index");
     if crates_index::Index::new::<&str>("_index".into())
         .retrieve_or_update()
         .is_err()
     {
-        log::error!("could not retrieve crates.io index");
+        error!("could not retrieve crates.io index");
     }
 
     // loop through each subscription, and fulfill if necessary
