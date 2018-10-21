@@ -3,8 +3,20 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE IF NOT EXISTS users (
 	user_id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-	email_addr text NOT NULL,
 	hashed_password text NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS emails (
+  email_id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id uuid NOT NULL REFERENCES users(user_id),
+  verified boolean NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE IF NOT EXISTS secure_tokens (
+  secure_token_id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  email_id uuid NOT NULL REFERENCES emails(email_id),
+  expiration timestamp NOT NULL,
+  val text NOT NULL
 );
 
 DO $$ BEGIN
@@ -14,7 +26,7 @@ EXCEPTION
 END $$;
 CREATE TABLE IF NOT EXISTS subscriptions (
 	subscription_id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-	user_id uuid NOT NULL REFERENCES users(user_id),
+	email_id uuid NOT NULL REFERENCES emails(email_id),
 	crate_name text NOT NULL,
 	subscription_type subscription_type NOT NULL
 );
@@ -51,6 +63,6 @@ EXCEPTION
 END $$;
 CREATE TABLE IF NOT EXISTS sent_means (
 	sent_means_id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-	user_id uuid NOT NULL REFERENCES users(user_id),
+	email_id uuid NOT NULL REFERENCES emails(email_id),
 	means means_of_transportation NOT NULL
 );
