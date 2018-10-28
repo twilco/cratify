@@ -20,7 +20,7 @@ TODO
 
 ## Environments and deployment
 
-You can run cratify locally without Docker (although you will need to figure out the database on your own), locally with Docker and Docker Compose, and in production with Docker and Docker Compose.
+You can run Cratify locally without Docker (although you will need to figure out the database on your own), locally with Docker and Docker Compose, and in production with Docker and Docker Compose.
 
 Regardless of environment, Cratify expects certain environment variable to be present (such as `CRATIFY_DATABASE_URL`).  
 
@@ -30,7 +30,7 @@ When running locally without Docker, these should be set in `local.env`, which i
 
 Cratify makes use of [Postgres](https://www.postgresql.org/) as it's database, [Diesel](http://diesel.rs/) as it's ORM, and [R2D2](https://github.com/sfackler/r2d2) as it's database connection pooling mechanism.  We also utilize Diesel's migrations, which run automatically on app startup. These migrations give us the ability to safely transform the database schema as the application evolves.  You can find our migrations [here](/migrations) in the root directory of the project.  If you want to know more about how this works, Diesel's documentation is excellent and can explain it much better than I can - [check it out](http://diesel.rs/guides/getting-started/).
 
-Something interesting to note is the [database/init.sql](/database/init.sql) file.  What is this for, exactly?  Well, the script itself is pretty simple - it just creates a `cratify` database for us if it doesn't already exist...it's how it's used that is interesting.  In official Postgres Docker images, any `.sql` file in the `/docker-entrypoint-initdb.d/` folder will automatically be run on container startup.  This is really handy, because the way we use Diesel assumes that the database has already been created.  By specifiying this `init.sql` as a volume for our Postgres container, we can map this file into the container and ensure we have a database to use when we `docker-compose up` our app!
+Something interesting to note is the [database/init.sql](/database/init.sql) file.  What is this for, exactly?  Well, the script itself is pretty simple - it just creates a `cratify` database for us if it doesn't already exist...it's how it's used that is interesting.  In official Postgres Docker images, any `.sql` file in the `/docker-entrypoint-initdb.d/` folder will automatically be run on container startup.  This is really handy, because the way we use Diesel assumes that the database has already been created.  By specifying this `init.sql` as a volume for our Postgres container, we can map this file into the container and ensure we have a database to use when we `docker-compose up` our app!
 
 ```.yaml
 db:
