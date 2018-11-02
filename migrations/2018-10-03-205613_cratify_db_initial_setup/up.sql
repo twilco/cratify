@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
 	subscription_id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
 	user_id uuid NOT NULL REFERENCES users(user_id),
 	crate_name text NOT NULL,
+	crate_version text NOT NULL,
 	subscription_type subscription_type NOT NULL
 );
 
