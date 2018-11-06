@@ -10,12 +10,7 @@ WORKDIR /cratify
 COPY ./Cargo.lock ./Cargo.lock
 COPY ./Cargo.toml ./Cargo.toml
 
-# purge curl and libcurl to get the curl-sys crate (which is depended on by our dependencies) to use the bundled curl
-# rather than the system curl.  without this, we get lots of curl compatibility issues
-RUN apt-get purge curl 'libcurl*' -y
-
-# this build step will cache our dependencies
-RUN cargo build --release
+# remove automatically created main.rs
 RUN rm src/*.rs
 
 # copy our source tree
@@ -24,8 +19,12 @@ COPY ./src ./src
 # and our migrations
 COPY ./migrations ./migrations
 
-# touch the real main.rs to prevent Docker from using the one created in `cargo new --bin cratify`
-RUN touch src/main.rs
+# purge curl and libcurl to get the curl-sys crate (which is depended on by our dependencies) to use the bundled curl
+# rather than the system curl.  without this, we get lots of curl compatibility issues
+RUN apt-get purge curl 'libcurl*' -y
+
+# this build step will cache our dependencies
+RUN cargo build --release
 
 # build for release
 RUN cargo build --release
