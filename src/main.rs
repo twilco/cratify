@@ -1,6 +1,5 @@
 #![feature(custom_attribute)]
-#![feature(plugin)]
-#![plugin(rocket_codegen)]
+#![feature(proc_macro_hygiene, decl_macro)]
 #![allow(proc_macro_derive_resolution_fallback)]
 
 #[macro_use]
@@ -10,25 +9,35 @@ extern crate diesel_migrations;
 extern crate diesel;
 
 #[macro_use]
+extern crate rocket;
+
+#[macro_use]
 extern crate slog;
 
 #[macro_use]
 extern crate slog_scope;
 
-use diesel::pg::PgConnection;
+pub(crate) mod app_env;
+pub(crate) mod db;
 
+use diesel::pg::PgConnection;
 use job_scheduler::{Job, JobScheduler};
+use rocket::response::NamedFile;
 use rocket::Request;
+use rocket::State;
+use rocket_contrib::serve::StaticFiles;
+use self::app_env::AppEnv;
 use slog::Drain;
 use std::fs::OpenOptions;
 use std::thread;
 use std::time::Duration;
 
-pub(crate) mod db;
-
 #[get("/")]
-fn index() -> &'static str {
-    "Hello!"
+fn index(env: State<AppEnv>) -> std::io::Result<NamedFile> {
+    match env.inner() {
+        AppEnv::Local => NamedFile::open("frontend/public/index.html"),
+        AppEnv::Prod => NamedFile::open("frontend/build/index.html")
+    }
 }
 
 #[catch(404)]
@@ -98,10 +107,28 @@ fn cratify() {
         }
     });
 
-    rocket::ignite()
-        .catch(catchers![not_found])
-        .mount("/", routes![index])
-        .launch();
+    let rocket = rocket::ignite();
+    match std::env::var("CRATIFY_APP_ENV") {
+        Ok(env_str) => match env_str.as_str() {
+            "local" => {
+                rocket.manage(AppEnv::Local)
+                    .mount("/", routes![index])
+                    .mount("/static", StaticFiles::from("frontend/public"))
+                    .register(catchers![not_found])
+                    .launch();
+            },
+            "prod" => {
+                rocket.manage(AppEnv::Prod)
+                    .mount("/", routes![index])
+                    .mount("/static", StaticFiles::from("frontend/build"))
+                    .register(catchers![not_found])
+                    .launch();
+            },
+            _ => panic!("unexpected environment found when trying to serve index route: {}", env_str)
+
+        },
+        Err(e) => panic!("unable to find CRATIFY_APP_ENV - err was: {}", e)
+    }
 }
 
 fn build_logger() -> slog::Logger {
