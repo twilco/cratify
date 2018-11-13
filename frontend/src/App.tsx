@@ -2,10 +2,10 @@ import * as React from 'react'
 import { BrowserRouter, Route } from 'react-router-dom'
 import styled from 'styled-components'
 
-import About from './About'
-import AppNav from './AppNav'
-import Footer from './Footer'
-import Signup from './Signup'
+import About from './components/About'
+import AppNav from './components/AppNav'
+import Footer from './components/Footer'
+import Signup from './components/Signup'
 
 const StyledFooter = styled(Footer)`
   margin-top: 25px;
