@@ -1,12 +1,17 @@
 import * as React from 'react'
 import { Button, Jumbotron } from 'reactstrap'
+import styled from 'styled-components'
+
+const Infotron = styled(Jumbotron)`
+  margin-bottom: 0 !important;
+`
 
 const About = () => {
   return (
     <div className="container">
       <div className="row justify-content-md-center">
         <div className="col-9">
-          <Jumbotron>
+          <Infotron>
             <h1 className="display-3">Welcome to Cratify</h1>
             <p className="lead">
               Ever want to know when another crate depends on yours?  We got you covered!
@@ -44,7 +49,7 @@ const About = () => {
               Sound good?  Click below to get started. <br/>
               <Button color="primary">Sign up</Button>
             </p>
-          </Jumbotron>
+          </Infotron>
         </div>
       </div>
     </div>

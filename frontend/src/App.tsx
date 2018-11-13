@@ -5,9 +5,11 @@ import styled from 'styled-components'
 import About from './About'
 import AppNav from './AppNav'
 import Footer from './Footer'
+import Signup from './Signup'
 
 const StyledFooter = styled(Footer)`
-  margin-bottom: 35px;
+  margin-top: 25px;
+  margin-bottom: 25px;
 `
 
 const ContentContainer = styled.div`
@@ -24,6 +26,7 @@ const App = () => (
         <StyledAppNav/>
         <ContentContainer>
           <Route path="/" exact={true} component={About} />
+          <Route path="/signup" exact={true} component={Signup} />
         </ContentContainer>
         <StyledFooter/>
       </div>
