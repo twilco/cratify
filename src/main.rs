@@ -113,7 +113,11 @@ fn cratify() {
 
 fn build_app(conn_pool: Pool<ConnectionManager<PgConnection>>, env: AppEnv) -> App<AppState> {
     let app = App::with_state(AppState { conn_pool, env })
-        .resource("/", |res| res.method(Method::GET).with(index))
+        .resource("/api", |res| {
+            res.method(Method::GET)
+                .f(|_r: &HttpRequest<AppState>| "api")
+        })
+        .resource("/{tail:.*}", |res| res.method(Method::GET).with(frontend))
         .default_resource(|res| res.f(default_route));
 
     match env {
@@ -133,7 +137,7 @@ struct AppState {
     env: AppEnv,
 }
 
-fn index(state: State<AppState>) -> impl Responder {
+fn frontend(state: State<AppState>) -> impl Responder {
     match state.env {
         AppEnv::Local => NamedFile::open("frontend/build/index.html"),
         AppEnv::Prod => NamedFile::open("frontend/build/index.html"),
