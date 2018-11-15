@@ -4,7 +4,10 @@ rust: nightly
 services:
 - docker
 cache: cargo
+before_script:
+- rustup component add rustfmt-preview
 script:
+- cargo fmt --all -- --check
 - docker-compose build app
 after_success:
 - |
