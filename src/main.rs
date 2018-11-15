@@ -9,9 +9,6 @@ extern crate diesel_migrations;
 extern crate diesel;
 
 #[macro_use]
-extern crate rocket;
-
-#[macro_use]
 extern crate slog;
 
 #[macro_use]
@@ -20,30 +17,18 @@ extern crate slog_scope;
 pub(crate) mod app_env;
 pub(crate) mod db;
 
-use diesel::pg::PgConnection;
-use job_scheduler::{Job, JobScheduler};
-use rocket::response::NamedFile;
-use rocket::Request;
-use rocket::State;
-use rocket_contrib::serve::StaticFiles;
 use self::app_env::AppEnv;
+use actix_web::{
+    fs::NamedFile, fs::StaticFiles, http::Method, server, App, HttpRequest, Responder, State,
+};
+use diesel::pg::PgConnection;
+use diesel::r2d2::ConnectionManager;
+use job_scheduler::{Job, JobScheduler};
+use r2d2::Pool;
 use slog::Drain;
 use std::fs::OpenOptions;
 use std::thread;
 use std::time::Duration;
-
-#[get("/")]
-fn index(env: State<AppEnv>) -> std::io::Result<NamedFile> {
-    match env.inner() {
-        AppEnv::Local => NamedFile::open("frontend/public/index.html"),
-        AppEnv::Prod => NamedFile::open("frontend/build/index.html")
-    }
-}
-
-#[catch(404)]
-fn not_found(_req: &Request) -> &'static str {
-    "Route not found."
-}
 
 // Embed migrations into the binary rather than requiring them to be run through some outside process.
 embed_migrations!("migrations");
@@ -69,12 +54,11 @@ fn cratify() {
         );
     }
 
-    let manager: diesel::r2d2::ConnectionManager<PgConnection> =
-        diesel::r2d2::ConnectionManager::new(
-            std::env::var("CRATIFY_DATABASE_URL")
-                .expect("CRATIFY_DATABASE_URL env variable is required"),
-        );
-    let pool = r2d2::Pool::builder()
+    let manager: ConnectionManager<PgConnection> = ConnectionManager::new(
+        std::env::var("CRATIFY_DATABASE_URL")
+            .expect("CRATIFY_DATABASE_URL env variable is required"),
+    );
+    let pool = Pool::builder()
         .max_size(15)
         .build(manager)
         .expect("could not open database pool");
@@ -107,28 +91,57 @@ fn cratify() {
         }
     });
 
-    let rocket = rocket::ignite();
     match std::env::var("CRATIFY_APP_ENV") {
         Ok(env_str) => match env_str.as_str() {
             "local" => {
-                rocket.manage(AppEnv::Local)
-                    .mount("/", routes![index])
-                    .mount("/static", StaticFiles::from("frontend/public"))
-                    .register(catchers![not_found])
-                    .launch();
-            },
+                server::new(move || build_app(pool.clone(), AppEnv::Local))
+                    .bind("0.0.0.0:8080")
+                    .expect("couldn't start actix web server")
+                    .run();
+            }
             "prod" => {
-                rocket.manage(AppEnv::Prod)
-                    .mount("/", routes![index])
-                    .mount("/static", StaticFiles::from("frontend/build"))
-                    .register(catchers![not_found])
-                    .launch();
-            },
-            _ => panic!("unexpected environment found when trying to serve index route: {}", env_str)
-
+                server::new(move || build_app(pool.clone(), AppEnv::Prod))
+                    .bind("0.0.0.0:80")
+                    .expect("couldn't start actix web server")
+                    .run();
+            }
+            _ => panic!("unexpected environment found: {}", env_str),
         },
-        Err(e) => panic!("unable to find CRATIFY_APP_ENV - err was: {}", e)
+        Err(e) => panic!("unable to find CRATIFY_APP_ENV - err was: {}", e),
     }
+}
+
+fn build_app(conn_pool: Pool<ConnectionManager<PgConnection>>, env: AppEnv) -> App<AppState> {
+    let app = App::with_state(AppState { conn_pool, env })
+        .resource("/", |res| res.method(Method::GET).with(index))
+        .default_resource(|res| res.f(default_route));
+
+    match env {
+        AppEnv::Local => app.handler(
+            "/static",
+            StaticFiles::new("./frontend/build/static").unwrap(),
+        ),
+        AppEnv::Prod => app.handler(
+            "/static",
+            StaticFiles::new("./frontend/build/static").unwrap(),
+        ),
+    }
+}
+
+struct AppState {
+    conn_pool: Pool<ConnectionManager<PgConnection>>,
+    env: AppEnv,
+}
+
+fn index(state: State<AppState>) -> impl Responder {
+    match state.env {
+        AppEnv::Local => NamedFile::open("frontend/build/index.html"),
+        AppEnv::Prod => NamedFile::open("frontend/build/index.html"),
+    }
+}
+
+fn default_route(_req: &HttpRequest<AppState>) -> impl Responder {
+    "route not found"
 }
 
 fn build_logger() -> slog::Logger {

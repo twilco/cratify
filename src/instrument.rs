@@ -6,8 +6,6 @@ extern crate diesel;
 
 pub(crate) mod db;
 
-use crate::db::models::*;
-
 fn main() -> Result<(), Box<std::error::Error>> {
     println!("Hello world");
     Ok(())
