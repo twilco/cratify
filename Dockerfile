@@ -41,12 +41,8 @@ RUN rm -rf /var/lib/apt/lists/*
 # copy the build artifact from the build stage
 COPY --from=build /cratify/target/release/cratify .
 
-# by default, rocket runs on 8000.  let's expose that port
-EXPOSE 8000
+# we're running our web server on 8080, so let's expose that port.
+EXPOSE 8080
 
-# by default, rocket runs on localhost.  localhost in a docker container means nothing outside the container can connect
-# to it, which is not helpful in a web application.  0.0.0.0 does not have the same problem, so have rocket run on that
-# address instead.
-ENV ROCKET_ADDRESS 0.0.0.0
 # set the startup command to run our binary
 CMD ["./cratify"]
