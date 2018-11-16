@@ -90,35 +90,37 @@ export default class Signup extends React.Component<{}, IState> {
   }
 
   private confirmPasswordChanged = (evt: ChangeEvent<HTMLInputElement>) => {
+    let newDirty = this.state.passwordsDirty
+    let newMatch = this.state.passwordsMatch
+    if (this.state.password === evt.target.value) {
+      newDirty = evt.target.value !== ''
+      newMatch = true
+    } else {
+      newDirty = true
+      newMatch = false
+    }
     this.setState({
       confirmPassword: evt.target.value,
-      passwordsDirty: true,
+      passwordsDirty: newDirty,
+      passwordsMatch: newMatch,
     })
-    if (this.state.password === evt.target.value) {
-      this.setState({
-        passwordsMatch: true,
-      })
-    } else {
-      this.setState({
-        passwordsMatch: false,
-      })
-    }
   }
 
   private passwordChanged = (evt: ChangeEvent<HTMLInputElement>) => {
+    let newDirty = this.state.passwordsDirty
+    let newMatch = this.state.passwordsMatch
+    if (this.state.confirmPassword === evt.target.value) {
+      newDirty = evt.target.value !== ''
+      newMatch = true
+    } else {
+      newDirty = true
+      newMatch = false
+    }
     this.setState({
       password: evt.target.value,
-      passwordsDirty: true,
+      passwordsDirty: newDirty,
+      passwordsMatch: newMatch,
     })
-    if (this.state.confirmPassword === evt.target.value) {
-      this.setState({
-        passwordsMatch: true,
-      })
-    } else {
-      this.setState({
-        passwordsMatch: false,
-      })
-    }
   }
 
   private usernameChanged = (evt: ChangeEvent<HTMLInputElement>) => {
