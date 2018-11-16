@@ -8,10 +8,11 @@
     ]
   },
   "rules": {
-    "variable-name": [false],
     "import-name": [false],
-    "semicolon": [true, "never"],
     "max-line-length": [true, 120],
-    "no-console": [false]
+    "no-console": [false],
+    "no-duplicate-imports": [false], // Have to do this due to: https://github.com/palantir/tslint/issues/3418
+    "semicolon": [true, "never"],
+    "variable-name": [false]
   }
 }

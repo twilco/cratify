@@ -1,13 +1,15 @@
-import request from './request'
+// Polyfill for fetch
+import 'whatwg-fetch'
+import wretch from 'wretch'
 
 export const signup = async (username: string, password: string) => {
   try {
-    const resp = await request('/signup', { body: JSON.stringify({
+    return await wretch('/api/signup').post({
       password,
       username,
-    }), method: 'POST' })
-    return resp.response.json()
+    }).json()
   } catch (e) {
     console.error(`error attempting to sign up: ${e}`)
+    return { error: e }
   }
 }
