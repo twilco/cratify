@@ -17,15 +17,18 @@ const PageHeader = styled.h1`
 
 const StyledInput = styled(Input)`
   margin-bottom: 25px;
+  border-color: 1px solid #ced4da;
 `
 
 interface IState {
   confirmPassword: string,
   password: string,
+  passwordsDirty: boolean,
   passwordsMatch: boolean,
   username: string,
 }
 
+const minPasswordLength = 4
 export default class Signup extends React.Component<{}, IState> {
   constructor(props: {}) {
     super(props)
@@ -33,6 +36,7 @@ export default class Signup extends React.Component<{}, IState> {
     this.state = {
       confirmPassword: '',
       password: '',
+      passwordsDirty: false,
       passwordsMatch: true,
       username: '',
     }
@@ -45,24 +49,28 @@ export default class Signup extends React.Component<{}, IState> {
             <PageHeader>Sign up with Cratify</PageHeader>
             <StyledInput
               autoFocus={ true }
-              value={ this.state.username }
               onChange={ this.usernameChanged }
               placeholder="username"
+              value={ this.state.username }
             />
             <StyledInput
-              valid={ this.state.passwordsMatch }
+              className={ this.state.passwordsDirty ? '' : 'cratify-clean-input' }
               invalid={ !this.state.passwordsMatch }
               onChange={ this.passwordChanged }
+              minLength={ minPasswordLength }
               placeholder="password"
               type="password"
+              valid={ this.state.passwordsMatch }
               value={ this.state.password }
             />
             <StyledInput
-              valid={ this.state.passwordsMatch }
+              className={ this.state.passwordsDirty ? '' : 'cratify-clean-input' }
               invalid={ !this.state.passwordsMatch }
               onChange={ this.confirmPasswordChanged }
+              minLength={ minPasswordLength }
               placeholder="confirm password"
               type="password"
+              valid={ this.state.passwordsMatch }
               value={ this.state.confirmPassword }
             />
             <Button
@@ -84,6 +92,7 @@ export default class Signup extends React.Component<{}, IState> {
   private confirmPasswordChanged = (evt: ChangeEvent<HTMLInputElement>) => {
     this.setState({
       confirmPassword: evt.target.value,
+      passwordsDirty: true,
     })
     if (this.state.password === evt.target.value) {
       this.setState({
@@ -99,6 +108,7 @@ export default class Signup extends React.Component<{}, IState> {
   private passwordChanged = (evt: ChangeEvent<HTMLInputElement>) => {
     this.setState({
       password: evt.target.value,
+      passwordsDirty: true,
     })
     if (this.state.confirmPassword === evt.target.value) {
       this.setState({
