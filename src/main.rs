@@ -112,24 +112,21 @@ fn cratify() {
 }
 
 fn build_app(conn_pool: Pool<ConnectionManager<PgConnection>>, env: AppEnv) -> App<AppState> {
-    let app = App::with_state(AppState { conn_pool, env })
+    let static_handler = match env {
+        AppEnv::Local => StaticFiles::new("./frontend/build/static").unwrap(),
+        AppEnv::Prod => StaticFiles::new("./frontend/build/static").unwrap(),
+    };
+
+    App::with_state(AppState { conn_pool, env })
         .resource("/api", |res| {
             res.method(Method::GET)
                 .f(|_r: &HttpRequest<AppState>| "api")
         })
+        .resource("/static/{tail:.*}", |res| {
+            res.method(Method::GET).h(static_handler)
+        })
         .resource("/{tail:.*}", |res| res.method(Method::GET).with(frontend))
-        .default_resource(|res| res.f(default_route));
-
-    match env {
-        AppEnv::Local => app.handler(
-            "/static",
-            StaticFiles::new("./frontend/build/static").unwrap(),
-        ),
-        AppEnv::Prod => app.handler(
-            "/static",
-            StaticFiles::new("./frontend/build/static").unwrap(),
-        ),
-    }
+        .default_resource(|res| res.f(default_route))
 }
 
 struct AppState {
