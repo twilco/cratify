@@ -28,7 +28,6 @@ interface IState {
   username: string,
 }
 
-const minPasswordLength = 4
 export default class Signup extends React.Component<{}, IState> {
   constructor(props: {}) {
     super(props)
@@ -57,7 +56,6 @@ export default class Signup extends React.Component<{}, IState> {
               className={ this.state.passwordsDirty ? '' : 'cratify-clean-input' }
               invalid={ !this.state.passwordsMatch }
               onChange={ this.passwordChanged }
-              minLength={ minPasswordLength }
               placeholder="password"
               type="password"
               valid={ this.state.passwordsMatch }
@@ -67,7 +65,6 @@ export default class Signup extends React.Component<{}, IState> {
               className={ this.state.passwordsDirty ? '' : 'cratify-clean-input' }
               invalid={ !this.state.passwordsMatch }
               onChange={ this.confirmPasswordChanged }
-              minLength={ minPasswordLength }
               placeholder="confirm password"
               type="password"
               valid={ this.state.passwordsMatch }
