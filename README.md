@@ -1,4 +1,4 @@
-# cratify
+# Cratify
 
 Want to know when another crate depends on yours?  We can notify (_cratify!_) you when this happens.
 
