@@ -107,7 +107,7 @@ fn cratify() {
             }
             _ => panic!("unexpected environment found: {}", env_str),
         },
-        Err(e) => panic!("unable to find CRATIFY_APP_ENV - err was: {}", e),
+        Err(e) => panic!("unable to find CRATIFY_APP_ENV - err: {}", e),
     }
 }
 
@@ -176,12 +176,10 @@ fn build_subscription_scheduler() -> JobScheduler<'static> {
 
 fn fulfill_subscriptions() {
     info!("attempting to retrieve or update crates.io index");
-    if crates_index::Index::new::<&str>("_index".into())
-        .retrieve_or_update()
-        .is_err()
-    {
-        error!("could not retrieve crates.io index");
-    }
+    match crates_index::Index::new::<&str>("_index".into()).retrieve_or_update() {
+        Ok(_) => info!("crates.io index updated"),
+        Err(e) => error!("could not retrieve crates.io index - err: {}", e),
+    };
 
     // loop through each subscription, and fulfill if necessary
 }
