@@ -1,3 +1,5 @@
+/* tslint:disable:jsx-no-lambda - necessary for rendering components inside a Route with props. */
+import { TranslationFunction } from 'i18next'
 import * as React from 'react'
 import { BrowserRouter, Route } from 'react-router-dom'
 import styled, { createGlobalStyle } from 'styled-components'
@@ -35,14 +37,18 @@ const GlobalStyles = createGlobalStyle`
   }
 `
 
-const App = () => (
+interface IProps {
+  t: TranslationFunction
+}
+
+const App = ({ t } : IProps) => (
     <BrowserRouter>
       <div>
         <GlobalStyles/>
         <StyledAppNav/>
         <ContentContainer>
           <Route path="/" exact={true} component={About} />
-          <Route path="/signup" exact={true} component={Signup} />
+          <Route path="/signup" exact={true} render={ props => <Signup {...props} t={t} /> } />
         </ContentContainer>
         <StyledFooter/>
       </div>

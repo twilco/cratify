@@ -5,6 +5,7 @@
   "dependencies": {
     "@types/enzyme": "^3.1.14",
     "@types/enzyme-adapter-react-16": "^1.0.3",
+    "@types/i18next": "^11.9.3",
     "@types/jest": "^23.3.9",
     "@types/node": "^10.12.2",
     "@types/react": "^16.4.18",
@@ -13,8 +14,12 @@
     "@types/reactstrap": "^6.4.2",
     "@types/styled-components": "^4.0.3",
     "bootstrap": "^4.1.3",
+    "i18next": "^12.0.0",
+    "i18next-browser-languagedetector": "^2.2.4",
+    "i18next-xhr-backend": "^1.5.1",
     "react": "^16.6.0",
     "react-dom": "^16.6.0",
+    "react-i18next": "^8.3.8",
     "react-router-dom": "^4.3.1",
     "react-scripts-ts": "3.1.0",
     "reactstrap": "^6.5.0",
@@ -29,6 +34,7 @@
     "eject": "react-scripts-ts eject"
   },
   "devDependencies": {
+    "@types/i18next-xhr-backend": "^1.4.1",
     "enzyme": "^3.7.0",
     "enzyme-adapter-react-16": "^1.6.0",
     "react-test-renderer": "^16.6.0",

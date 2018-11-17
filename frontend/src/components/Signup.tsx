@@ -1,3 +1,4 @@
+import { TranslationFunction } from 'i18next'
 import * as React from 'react'
 import { ChangeEvent, MouseEvent } from 'react'
 import {
@@ -20,6 +21,10 @@ const StyledInput = styled(Input)`
   border-color: 1px solid #ced4da;
 `
 
+interface IProps {
+  t: TranslationFunction
+}
+
 interface IState {
   confirmPassword: string,
   password: string,
@@ -28,8 +33,8 @@ interface IState {
   username: string,
 }
 
-export default class Signup extends React.Component<{}, IState> {
-  constructor(props: {}) {
+export default class Signup extends React.Component<IProps, IState> {
+  constructor(props: IProps) {
     super(props)
 
     this.state = {
