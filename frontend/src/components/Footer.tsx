@@ -1,3 +1,4 @@
+import { TranslationFunction } from 'i18next'
 import * as React from 'react'
 import styled from 'styled-components'
 
@@ -6,15 +7,16 @@ const Wrapper = styled.div`
 `
 
 interface IProps {
-  className?: string
+  className?: string,
+  t: TranslationFunction
 }
 
-const Footer = (props: IProps) => (
-  <Wrapper className={props.className}>
+const Footer = ({ className, t }: IProps) => (
+  <Wrapper className={className}>
     <small>
-      Have an idea for a feature? Found a bug?&nbsp;
+      { t('bug-or-feature') }&nbsp;
       <a href="https://github.com/twilco/cratify">
-        Open an issue on Github!
+        { t('open-issue') }
       </a>
     </small>
   </Wrapper>

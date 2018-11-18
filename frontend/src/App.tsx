@@ -45,12 +45,12 @@ const App = ({ t } : IProps) => (
     <BrowserRouter>
       <div>
         <GlobalStyles/>
-        <StyledAppNav/>
+        <StyledAppNav t={ t } />
         <ContentContainer>
-          <Route path="/" exact={true} component={About} />
-          <Route path="/signup" exact={true} render={ props => <Signup {...props} t={t} /> } />
+          <Route path="/" exact={ true } render={ props => <About { ...props } t={ t } /> } />
+          <Route path="/signup" exact={ true } render={ props => <Signup { ...props } t={ t } /> } />
         </ContentContainer>
-        <StyledFooter/>
+        <StyledFooter t={ t }/>
       </div>
     </BrowserRouter>
 )

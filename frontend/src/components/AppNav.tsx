@@ -1,16 +1,18 @@
+import { TranslationFunction } from 'i18next'
 import * as React from 'react'
 import {
-  Nav,
-  Navbar,
-  NavbarBrand,
-  NavbarToggler,
-  NavItem,
-  NavLink,
+Nav,
+Navbar,
+NavbarBrand,
+NavbarToggler,
+NavItem,
+NavLink,
 } from 'reactstrap'
 import styled from 'styled-components'
 
 interface IProps {
-  className?: string
+  className?: string,
+  t: TranslationFunction
 }
 
 interface IState {
@@ -41,16 +43,17 @@ export default class AppNav extends React.Component<IProps, IState> {
   }
 
   public render() {
+    const { t } = this.props
     return (
       <StyledNavbar className={this.props.className} color="light" light={true} expand="md">
           <NavbarBrand href="/">Cratify</NavbarBrand>
           <NavbarToggler onClick={this.toggle}/>
           <Nav navbar={true}>
             <NavItem>
-              <NavLink href="/signup">Sign up</NavLink>
+              <NavLink href="/signup">{ t('sign-up') }</NavLink>
             </NavItem>
             <NavItem>
-              <NavLink href="/login">Log in</NavLink>
+              <NavLink href="/login">{ t('log-in') }</NavLink>
             </NavItem>
           </Nav>
       </StyledNavbar>

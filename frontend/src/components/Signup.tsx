@@ -46,22 +46,23 @@ export default class Signup extends React.Component<IProps, IState> {
     }
   }
   public render() {
+    const { t } = this.props
     return (
       <div className="container">
         <div className="row justify-content-md-center">
           <ContentContainer className="col-4">
-            <PageHeader>Sign up with Cratify</PageHeader>
+            <PageHeader>{ t('sign-up-with-cratify') }</PageHeader>
             <StyledInput
               autoFocus={ true }
               onChange={ this.usernameChanged }
-              placeholder="username"
+              placeholder={ t('username-lower') }
               value={ this.state.username }
             />
             <StyledInput
               className={ this.state.passwordsDirty ? '' : 'cratify-clean-input' }
               invalid={ !this.state.passwordsMatch }
               onChange={ this.passwordChanged }
-              placeholder="password"
+              placeholder={ t('password-lower') }
               type="password"
               valid={ this.state.passwordsMatch }
               value={ this.state.password }
@@ -70,7 +71,7 @@ export default class Signup extends React.Component<IProps, IState> {
               className={ this.state.passwordsDirty ? '' : 'cratify-clean-input' }
               invalid={ !this.state.passwordsMatch }
               onChange={ this.confirmPasswordChanged }
-              placeholder="confirm password"
+              placeholder={ t('confirm-password-lower') }
               type="password"
               valid={ this.state.passwordsMatch }
               value={ this.state.confirmPassword }
@@ -80,7 +81,7 @@ export default class Signup extends React.Component<IProps, IState> {
               disabled={ !this.formIsValid() }
               onClick={ this.signupClicked }
             >
-              Sign up
+              { t('sign-up') }
             </Button>
           </ContentContainer>
         </div>

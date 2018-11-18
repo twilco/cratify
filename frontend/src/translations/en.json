@@ -1,0 +1,23 @@
+{
+  "any": "any",
+  "bug-or-feature": "Have an idea for a feature? Found a bug?",
+  "confirm-password-lower": "confirm password",
+  "fulfillment-desc": "Cratify allows you to specify any number of e-mail addresses to fulfill your subscriptions with.  Want to be notified on your personal e-mail for certain crates, and your work e-mail for others?  You can do that!  Mix and match subscriptions to your heart's content - we will take care of the rest.",
+  "get-started-click": "Sound good?  Click below to get started.",
+  "help-wanted": "Hey you reading this!  If you are fluent in some non-English language and want to help translate Cratify I'd more than welcome the help. See this issue for more details: ",
+  "how-can-i-use-it": "How can I use it?",
+  "how-it-works": "Cratify is simple.  Sign up to receive notifications for a crate name and version and we'll watch the <0><0></0></0> index for you.  When something interesting happens, we will notify (<1><0></0></1>) you!",
+  "immediate": "immediate",
+  "log-in": "Log in",
+  "open-issue": "Open an issue on Github!",
+  "password-lower": "password",
+  "periodic": "periodic",
+  "sign-up": "Sign up",
+  "sign-up-with-cratify": "Sign up with Cratify",
+  "simple-short-hook": "Ever want to know when another crate depends on yours?  We got you covered!",
+  "sub-types-and-fulfillment-header": "Subscription types and fulfillment",
+  "sub-types-desc": "The first subscription type you have at your disposal is called an <0><0></0></0> subscription.  As you might expect, when you create an <0><0></0></0> subscription we will notify you immediately when a new crate depends on the crate name and version you specify. The other type of subscription is a <1><0></0></1> subscription.  With a <1><0></0></1> subscription, we will send you a weekly, monthly, or yearly summary of all crates that depend on yours.",
+  "usage-example": "There are lots of neat ways you can use Cratify. Perhaps you're releasing a new version of your crate, let's call it <0><0></0></0>, and want to measure adoption of this new version versus the old. Create two subscriptions, one for <1><0></0></1> and one for <2><0></0></2>, and Cratify will let you know when each one is depended upon. Or perhaps you're just a curious person and want to know when another crate uses <3><0></0></3> version of your crate - Cratify can handle that, too.",
+  "username-lower": "username",
+  "welcome-to-cratify": "Welcome to Cratify"
+}
