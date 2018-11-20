@@ -1,5 +1,5 @@
 #[derive(Clone, Copy, Debug)]
-pub enum AppEnv {
+pub(crate) enum AppEnv {
     Local,
     Prod,
 }

@@ -3,6 +3,9 @@
 #![allow(proc_macro_derive_resolution_fallback)]
 
 #[macro_use]
+extern crate serde_derive;
+
+#[macro_use]
 extern crate diesel_migrations;
 
 #[macro_use]
@@ -14,6 +17,8 @@ extern crate slog;
 #[macro_use]
 extern crate slog_scope;
 
+pub(crate) mod api;
+pub(crate) mod app;
 pub(crate) mod app_env;
 pub(crate) mod db;
 
@@ -83,7 +88,7 @@ fn cratify() {
     }
 
     thread::spawn(|| {
-        info!("initiating subscription fulfillment scheduler.");
+        info!("initiating subscription fulfillment scheduler");
         let mut sched = build_subscription_scheduler();
         loop {
             sched.tick();
@@ -118,9 +123,10 @@ fn build_app(conn_pool: Pool<ConnectionManager<PgConnection>>, env: AppEnv) -> A
     };
 
     App::with_state(AppState { conn_pool, env })
-        .resource("/api", |res| {
+        .resource("/api/signup", |res| res.method(Method::POST).f(api::signup))
+        .resource("/api/{tail:.*}", |res| {
             res.method(Method::GET)
-                .f(|_r: &HttpRequest<AppState>| "api")
+                .f(|_r: &HttpRequest<AppState>| "api route not found")
         })
         .resource("/static/{tail:.*}", |res| {
             res.method(Method::GET).h(static_handler)
@@ -154,14 +160,22 @@ fn build_logger() -> slog::Logger {
         .open(log_path)
         .unwrap();
 
-    let file_dec = slog_term::PlainSyncDecorator::new(file);
+    let file_dec = slog_term::PlainDecorator::new(file);
     let file_drain = slog_term::FullFormat::new(file_dec).build().fuse();
 
-    let term_dec = slog_term::PlainSyncDecorator::new(std::io::stdout());
+    let term_dec = slog_term::TermDecorator::new().stdout().build();
     let term_drain = slog_term::FullFormat::new(term_dec).build().fuse();
 
-    let dupe_drain = slog::Duplicate::new(file_drain, term_drain).fuse();
-    slog::Logger::root(dupe_drain, slog::o!())
+    let file_term_drain = slog::Duplicate::new(file_drain, term_drain).fuse();
+
+    let async_env_drain = slog_async::Async::default(
+        slog_envlogger::LogBuilder::new(file_term_drain)
+            .filter(None, slog::FilterLevel::Info)
+            .build(),
+    )
+    .fuse();
+
+    slog::Logger::root(async_env_drain, slog::o!())
 }
 
 fn build_subscription_scheduler() -> JobScheduler<'static> {
