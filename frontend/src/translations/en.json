@@ -4,7 +4,7 @@
   "confirm-password-lower": "confirm password",
   "fulfillment-desc": "Cratify allows you to specify any number of e-mail addresses to fulfill your subscriptions with.  Want to be notified on your personal e-mail for certain crates, and your work e-mail for others?  You can do that!  Mix and match subscriptions to your heart's content - we will take care of the rest.",
   "get-started-click": "Sound good?  Click below to get started.",
-  "help-wanted": "Hey you reading this!  If you are fluent in some non-English language and want to help translate Cratify I'd more than welcome the help. See this issue for more details: ",
+  "help-wanted": "Hey you reading this!  If you are fluent in some non-English language and want to help translate Cratify I'd more than welcome the help. See this issue for more details: https://github.com/twilco/cratify/issues/12",
   "how-can-i-use-it": "How can I use it?",
   "how-it-works": "Cratify is simple.  Sign up to receive notifications for a crate name and version and we'll watch the <0><0></0></0> index for you.  When something interesting happens, we will notify (<1><0></0></1>) you!",
   "immediate": "immediate",
