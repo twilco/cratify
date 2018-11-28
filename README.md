@@ -1,4 +1,6 @@
-# Cratify
+# Cratify 
+
+[![Build Status](https://img.shields.io/travis-ci/twilco/cratify.svg?branch=master&style=flat-square)](https://travis-ci.org/twilco/cratify)
 
 Want to know when another crate depends on yours?  We can notify (_cratify!_) you when this happens.
 
@@ -10,13 +12,13 @@ Want to know when another crate depends on yours?  We can notify (_cratify!_) yo
 
 ## License
 
-Licensed under either of
+Licensed under either
 
 - Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or
   http://www.apache.org/licenses/LICENSE-2.0)
 - MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
 
-at your option.
+at your decision.
 
 ### Contribution
 
