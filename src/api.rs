@@ -1,13 +1,30 @@
-/// Where our API handlers will go.
-use actix_web::{AsyncResponder, Error, FromRequest, HttpRequest, HttpResponse, Json, Responder};
 use crate::app::models::*;
+use crate::db::exec::CreateUser;
 use crate::AppState;
-use futures::future::{result, Future};
+/// Where our API handlers go.
+use actix_web::{AsyncResponder, Error, HttpMessage, HttpRequest, HttpResponse};
+use futures::future::Future;
 
 /// Handle a user signup request.
 pub(crate) fn signup(
     req: &HttpRequest<AppState>,
-) -> Box<Future<Item = Json<SignupRequest>, Error = Error>> {
-    let signup = Json::<SignupRequest>::extract(&req);
-    result(signup.wait()).responder()
+) -> Box<Future<Item = HttpResponse, Error = Error>> {
+    let db = req.state().db_addr.clone();
+    req.json()
+        .from_err()
+        .and_then(move |sr: SignupRequest| {
+            db.send(CreateUser {
+                username: sr.username,
+                password: sr.password,
+            })
+            .from_err()
+            .and_then(|res| match res {
+                Ok(_) => Ok(HttpResponse::Ok().finish()),
+                Err(e) => {
+                    error!("couldn't save user: {}", e);
+                    Ok(HttpResponse::InternalServerError().finish())
+                }
+            })
+        })
+        .responder()
 }

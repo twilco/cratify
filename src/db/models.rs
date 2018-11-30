@@ -25,12 +25,14 @@ pub enum MeansOfTransportation {
 #[derive(Debug, Eq, PartialEq, Queryable)]
 pub struct User {
     pub user_id: Uuid,
+    pub username: String,
     pub hashed_password: String,
 }
 
 #[derive(Insertable)]
 #[table_name = "users"]
 pub struct NewUser<'a> {
+    pub username: &'a str,
     pub hashed_password: &'a str,
 }
 

@@ -23,6 +23,8 @@ pub(crate) mod app_env;
 pub(crate) mod db;
 
 use self::app_env::AppEnv;
+use crate::db::exec::DbExecutor;
+use actix::{Addr, SyncArbiter};
 use actix_web::{
     fs::NamedFile, fs::StaticFiles, http::Method, server, App, HttpRequest, Responder, State,
 };
@@ -96,16 +98,18 @@ fn cratify() {
         }
     });
 
+    let sys = actix::System::new("cratify");
+    let db_addr = SyncArbiter::start(5, move || DbExecutor(pool.clone()));
     match std::env::var("CRATIFY_APP_ENV") {
         Ok(env_str) => match env_str.as_str() {
             "local" => {
-                server::new(move || build_app(pool.clone(), AppEnv::Local))
+                server::new(move || build_app(&db_addr, AppEnv::Local))
                     .bind("0.0.0.0:8080")
                     .expect("couldn't start actix web server")
                     .run();
             }
             "prod" => {
-                server::new(move || build_app(pool.clone(), AppEnv::Prod))
+                server::new(move || build_app(&db_addr, AppEnv::Prod))
                     .bind("0.0.0.0:80")
                     .expect("couldn't start actix web server")
                     .run();
@@ -114,29 +118,33 @@ fn cratify() {
         },
         Err(e) => panic!("unable to find CRATIFY_APP_ENV - err: {}", e),
     }
+    let _ = sys.run();
 }
 
-fn build_app(conn_pool: Pool<ConnectionManager<PgConnection>>, env: AppEnv) -> App<AppState> {
+fn build_app(db_addr: &Addr<DbExecutor>, env: AppEnv) -> App<AppState> {
     let static_handler = match env {
         AppEnv::Local => StaticFiles::new("./frontend/build/static").unwrap(),
         AppEnv::Prod => StaticFiles::new("./frontend/build/static").unwrap(),
     };
 
-    App::with_state(AppState { conn_pool, env })
-        .resource("/api/signup", |res| res.method(Method::POST).f(api::signup))
-        .resource("/api/{tail:.*}", |res| {
-            res.method(Method::GET)
-                .f(|_r: &HttpRequest<AppState>| "api route not found")
-        })
-        .resource("/static/{tail:.*}", |res| {
-            res.method(Method::GET).h(static_handler)
-        })
-        .resource("/{tail:.*}", |res| res.method(Method::GET).with(frontend))
-        .default_resource(|res| res.f(default_route))
+    App::with_state(AppState {
+        db_addr: db_addr.clone(),
+        env,
+    })
+    .resource("/api/signup", |res| res.method(Method::POST).f(api::signup))
+    .resource("/api/{tail:.*}", |res| {
+        res.method(Method::GET)
+            .f(|_r: &HttpRequest<AppState>| "api route not found")
+    })
+    .resource("/static/{tail:.*}", |res| {
+        res.method(Method::GET).h(static_handler)
+    })
+    .resource("/{tail:.*}", |res| res.method(Method::GET).with(frontend))
+    .default_resource(|res| res.f(default_route))
 }
 
 struct AppState {
-    conn_pool: Pool<ConnectionManager<PgConnection>>,
+    db_addr: Addr<DbExecutor>,
     env: AppEnv,
 }
 

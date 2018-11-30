@@ -20,17 +20,6 @@ CREATE TABLE IF NOT EXISTS secure_tokens (
   val text NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS fulfillments (
-  fulfillment_id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  subscription_id NOT NULL REFERENCES subscriptions(subscription_id)
-);
-
-CREATE TABLE IF NOT EXISTS email_fulfillments (
-  email_fulfillment_id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  fulfillment_id NOT NULL REFERENCES fulfillments(fulfillment_id),
-  email_id NOT NULL REFERENCES emails(email_id)
-);
-
 DO $$ BEGIN
     CREATE TYPE subscription_type AS ENUM ('immediate', 'periodic');
 EXCEPTION
@@ -42,6 +31,17 @@ CREATE TABLE IF NOT EXISTS subscriptions (
 	crate_name text NOT NULL,
 	crate_version text NOT NULL,
 	subscription_type subscription_type NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS fulfillments (
+	fulfillment_id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+	subscription_id uuid NOT NULL REFERENCES subscriptions(subscription_id)
+);
+
+CREATE TABLE IF NOT EXISTS email_fulfillments (
+	email_fulfillment_id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+	fulfillment_id uuid NOT NULL REFERENCES fulfillments(fulfillment_id),
+	email_id uuid NOT NULL REFERENCES emails(email_id)
 );
 
 DO $$ BEGIN
