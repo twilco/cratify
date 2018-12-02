@@ -6,6 +6,18 @@ interface IAvailable {
   available: boolean,
 }
 
+export const login = async (username: string, password: string) => {
+  try {
+    return await wretch('/api/login').post({
+      password,
+      username,
+    }).json()
+  } catch (e) {
+    console.error(`error attempting to login: ${e}`)
+    return { error: e }
+  }
+}
+
 export const signup = async (username: string, password: string) => {
   try {
     return await wretch('/api/signup').post({

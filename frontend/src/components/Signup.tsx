@@ -1,7 +1,7 @@
 import { debounce } from 'debounce'
 import { TranslationFunction } from 'i18next'
 import * as React from 'react'
-import { ChangeEvent, MouseEvent } from 'react'
+import { ChangeEvent } from 'react'
 import {
 Button,
 Input,
@@ -119,7 +119,7 @@ export default class Signup extends React.Component<IProps, IState> {
     )
   }
   private formIsValid = () => {
-    return (this.state.password && this.state.username && this.state.passwordsMatch) || false
+    return this.state.password && this.state.username && this.state.passwordsMatch && !this.state.usernameTaken
   }
 
   private confirmPasswordChanged = (evt: ChangeEvent<HTMLInputElement>) => {
@@ -163,7 +163,7 @@ export default class Signup extends React.Component<IProps, IState> {
     this.debouncedAvailabiltyCheck(evt.target.value)
   }
 
-  private signupClicked = async (evt: MouseEvent) => {
+  private signupClicked = async () => {
     if (this.formIsValid()) {
       if (await usernameAvailable(this.state.username)) {
         const resp = await signup(this.state.username, this.state.password)

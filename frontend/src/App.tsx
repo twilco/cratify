@@ -7,6 +7,7 @@ import styled from 'styled-components'
 import About from './components/About'
 import AppNav from './components/AppNav'
 import Footer from './components/Footer'
+import Login from './components/Login'
 import Signup from './components/Signup'
 
 const StyledFooter = styled(Footer)`
@@ -33,6 +34,7 @@ const App = ({ t } : IProps) => (
         <ContentContainer>
           <Route path="/" exact={ true } render={ props => <About { ...props } t={ t } /> } />
           <Route path="/signup" exact={ true } render={ props => <Signup { ...props } t={ t } /> } />
+          <Route path="/login" exact={ true } render={ props => <Login { ...props } t={ t } /> } />
         </ContentContainer>
         <StyledFooter t={ t }/>
       </div>

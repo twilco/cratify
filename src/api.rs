@@ -13,15 +13,34 @@ pub(crate) fn signup(
     req.json()
         .from_err()
         .and_then(move |sr: SignupRequest| {
-            db.send(CreateUser {
-                username: sr.username,
-                password: sr.password,
+            db.send(IsUsernameAvailable {
+                username: sr.username.clone(),
             })
             .from_err()
-            .and_then(|res| match res {
-                Ok(_) => Ok(HttpResponse::Ok().finish()),
+            .and_then(move |res| match res {
+                Ok(available) => {
+                    if available {
+                        db.send(CreateUser {
+                            username: sr.username.clone(),
+                            password: sr.password.clone(),
+                        })
+                        .from_err::<failure::Error>()
+                        .and_then(move |res| match res {
+                            Ok(_) => Ok(HttpResponse::Ok().finish()),
+                            Err(e) => {
+                                error!("couldn't save user: {}", e);
+                                Ok(HttpResponse::InternalServerError().finish())
+                            }
+                        });
+                    }
+                    info!(
+                        "attempted signup with unavailable username of {}",
+                        sr.username
+                    );
+                    Ok(HttpResponse::BadRequest().finish())
+                }
                 Err(e) => {
-                    error!("couldn't save user: {}", e);
+                    error!("error determining username availability: {}", e);
                     Ok(HttpResponse::InternalServerError().finish())
                 }
             })
