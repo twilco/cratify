@@ -109,6 +109,7 @@ export default class Signup extends React.Component<IProps, IState> {
               color="primary"
               disabled={ !this.formIsValid() }
               onClick={ this.signupClicked }
+              type="button"
             >
               { t('sign-up') }
             </Button>

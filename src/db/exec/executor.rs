@@ -2,6 +2,7 @@ use crate::db::exec::msg::*;
 use crate::db::models::{NewUser, User};
 use ::actix::prelude::*;
 use ::actix::Handler;
+use bcrypt::*;
 use diesel::dsl::{exists, select};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
@@ -19,9 +20,10 @@ impl Handler<CreateUser> for DbExecutor {
     type Result = Result<User, Error>;
 
     fn handle(&mut self, msg: CreateUser, _: &mut Self::Context) -> Self::Result {
+        let hashed_password = hash(&msg.password, DEFAULT_COST)?;
         let new_user = NewUser {
             username: &msg.username,
-            hashed_password: &msg.password,
+            hashed_password: &hashed_password,
         };
 
         use crate::db::schema::users;
