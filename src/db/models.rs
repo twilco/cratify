@@ -22,7 +22,8 @@ pub enum MeansOfTransportation {
     Email,
 }
 
-#[derive(Debug, Eq, PartialEq, Queryable)]
+#[derive(Debug, Eq, Identifiable, PartialEq, Queryable)]
+#[primary_key(user_id)]
 pub struct User {
     pub user_id: Uuid,
     pub username: String,

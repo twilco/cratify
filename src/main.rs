@@ -23,7 +23,7 @@ pub(crate) mod app_env;
 pub(crate) mod db;
 
 use self::app_env::AppEnv;
-use crate::db::exec::DbExecutor;
+use crate::db::exec::executor::DbExecutor;
 use actix::{Addr, SyncArbiter};
 use actix_web::{
     fs::NamedFile, fs::StaticFiles, http::Method, server, App, HttpRequest, Responder, State,
@@ -132,6 +132,9 @@ fn build_app(db_addr: &Addr<DbExecutor>, env: AppEnv) -> App<AppState> {
         env,
     })
     .resource("/api/signup", |res| res.method(Method::POST).f(api::signup))
+    .resource("/api/available", |res| {
+        res.method(Method::POST).f(api::username_available)
+    })
     .resource("/api/{tail:.*}", |res| {
         res.method(Method::GET)
             .f(|_r: &HttpRequest<AppState>| "api route not found")

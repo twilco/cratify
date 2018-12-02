@@ -22,3 +22,28 @@ impl Responder for SignupRequest {
             .body(body))
     }
 }
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub(crate) struct UsernameAvailableRequest {
+    pub(crate) username: String,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub(crate) struct UsernameAvailableResponse {
+    pub(crate) available: bool,
+}
+
+/// Responder
+impl Responder for UsernameAvailableRequest {
+    type Item = HttpResponse;
+    type Error = Error;
+
+    fn respond_to<S>(self, req: &HttpRequest<S>) -> Result<HttpResponse, Error> {
+        let body = serde_json::to_string(&self)?;
+
+        // Create response and set content type
+        Ok(HttpResponse::Ok()
+            .content_type("application/json")
+            .body(body))
+    }
+}

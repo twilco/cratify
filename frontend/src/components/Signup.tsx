@@ -1,3 +1,4 @@
+import { debounce } from 'debounce'
 import { TranslationFunction } from 'i18next'
 import * as React from 'react'
 import { ChangeEvent, MouseEvent } from 'react'
@@ -6,7 +7,7 @@ Button,
 Input,
 } from 'reactstrap'
 import styled from 'styled-components'
-import { signup } from '../api-sdk/sdk'
+import { signup, usernameAvailable } from '../api-sdk/sdk'
 
 const ContentContainer = styled.div`
   text-align: center;
@@ -16,9 +17,15 @@ const PageHeader = styled.h1`
   margin-bottom: 50px;
 `
 
-const StyledInput = styled(Input)`
-  margin-bottom: 25px;
+const StyledInput = styled(Input)<{ hasValidationMessage: boolean }>`
+  margin-bottom: ${props => props.hasValidationMessage ? '0px' : '25px'};
+  margin-top: 6px;
   border-color: 1px solid #ced4da;
+`
+
+const ValidationMessage = styled.div`
+  /* Bootstrap override of class .invalid-feedback */
+  margin-top: 0px !important;
 `
 
 interface IProps {
@@ -28,21 +35,35 @@ interface IProps {
 interface IState {
   confirmPassword: string,
   password: string,
-  passwordsDirty: boolean,
+  passwordsClean: boolean,
   passwordsMatch: boolean,
+  usernameClean: boolean,
+  usernameTaken: boolean,
   username: string,
 }
 
 export default class Signup extends React.Component<IProps, IState> {
+  private debouncedAvailabiltyCheck = debounce((username: string) => {
+    usernameAvailable(username).then((available) => {
+      if (typeof available === 'boolean') {
+        this.setState({
+          usernameClean: username === '',
+          usernameTaken: !available,
+        })
+      }
+    })
+  }, 200)
   constructor(props: IProps) {
     super(props)
 
     this.state = {
       confirmPassword: '',
       password: '',
-      passwordsDirty: false,
+      passwordsClean: true,
       passwordsMatch: true,
       username: '',
+      usernameClean: true,
+      usernameTaken: false,
     }
   }
   public render() {
@@ -54,26 +75,34 @@ export default class Signup extends React.Component<IProps, IState> {
             <PageHeader>{ t('sign-up-with-cratify') }</PageHeader>
             <StyledInput
               autoFocus={ true }
+              hasValidationMessage={ this.state.usernameTaken }
+              invalid={ this.state.usernameClean ? undefined : this.state.usernameTaken }
               onChange={ this.usernameChanged }
               placeholder={ t('username-lower') }
+              valid={ this.state.usernameClean ? undefined : !this.state.usernameTaken }
               value={ this.state.username }
             />
+            { this.state.usernameTaken &&
+              <ValidationMessage className="invalid-feedback">
+                username taken - please try another
+              </ValidationMessage>
+            }
             <StyledInput
-              className={ this.state.passwordsDirty ? '' : 'cratify-clean-input' }
-              invalid={ !this.state.passwordsMatch }
+              hasValidationMessage={ false }
+              invalid={ this.state.passwordsClean ? undefined : !this.state.passwordsMatch }
               onChange={ this.passwordChanged }
               placeholder={ t('password-lower') }
               type="password"
-              valid={ this.state.passwordsMatch }
+              valid={ this.state.passwordsClean ? undefined : this.state.passwordsMatch }
               value={ this.state.password }
             />
             <StyledInput
-              className={ this.state.passwordsDirty ? '' : 'cratify-clean-input' }
-              invalid={ !this.state.passwordsMatch }
+              hasValidationMessage={ false }
+              invalid={ this.state.passwordsClean ? undefined : !this.state.passwordsMatch }
               onChange={ this.confirmPasswordChanged }
               placeholder={ t('confirm-password-lower') }
               type="password"
-              valid={ this.state.passwordsMatch }
+              valid={ this.state.passwordsClean ? undefined : this.state.passwordsMatch }
               value={ this.state.confirmPassword }
             />
             <Button
@@ -93,49 +122,56 @@ export default class Signup extends React.Component<IProps, IState> {
   }
 
   private confirmPasswordChanged = (evt: ChangeEvent<HTMLInputElement>) => {
-    let newDirty = this.state.passwordsDirty
+    let newClean = this.state.passwordsClean
     let newMatch = this.state.passwordsMatch
     if (this.state.password === evt.target.value) {
-      newDirty = evt.target.value !== ''
+      newClean = evt.target.value === ''
       newMatch = true
     } else {
-      newDirty = true
+      newClean = false
       newMatch = false
     }
     this.setState({
       confirmPassword: evt.target.value,
-      passwordsDirty: newDirty,
+      passwordsClean: newClean,
       passwordsMatch: newMatch,
     })
   }
 
   private passwordChanged = (evt: ChangeEvent<HTMLInputElement>) => {
-    let newDirty = this.state.passwordsDirty
+    let newClean = this.state.passwordsClean
     let newMatch = this.state.passwordsMatch
     if (this.state.confirmPassword === evt.target.value) {
-      newDirty = evt.target.value !== ''
+      newClean = evt.target.value === ''
       newMatch = true
     } else {
-      newDirty = true
+      newClean = false
       newMatch = false
     }
     this.setState({
       password: evt.target.value,
-      passwordsDirty: newDirty,
+      passwordsClean: newClean,
       passwordsMatch: newMatch,
     })
   }
 
-  private usernameChanged = (evt: ChangeEvent<HTMLInputElement>) => {
+  private usernameChanged = async (evt: ChangeEvent<HTMLInputElement>) => {
     this.setState({
       username: evt.target.value,
     })
+    this.debouncedAvailabiltyCheck(evt.target.value)
   }
 
   private signupClicked = async (evt: MouseEvent) => {
     if (this.formIsValid()) {
-      const resp = await signup(this.state.username, this.state.password)
-      console.log(resp)
+      if (await usernameAvailable(this.state.username)) {
+        const resp = await signup(this.state.username, this.state.password)
+        console.log(resp)
+      } else {
+        this.setState({
+          usernameTaken: true,
+        })
+      }
     }
   }
 }

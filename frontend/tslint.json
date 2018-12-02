@@ -13,6 +13,7 @@
     "no-console": [false],
     "no-duplicate-imports": [false], // Have to do this due to: https://github.com/palantir/tslint/issues/3418
     "semicolon": [true, "never"],
-    "variable-name": [false]
+    "variable-name": [false],
+    "align": [false]
   }
 }
