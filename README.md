@@ -6,7 +6,7 @@ Want to know when another crate depends on yours?  We can notify (_cratify!_) yo
 
 ## How does it work?
 
-* Sign up to receive cratifications for any crate.
+* Sign up to receive cratifications for any crate (and optionally, a specific version of that crate).
 * We monitor the [Cargo index](https://github.com/rust-lang/crates.io-index) for changes - when we see something you care about, we let you know via e-mail.
 * And that's it!
 
