@@ -2,10 +2,6 @@
 import 'whatwg-fetch'
 import wretch from 'wretch'
 
-interface IAvailable {
-  available: boolean,
-}
-
 export const login = async (username: string, password: string) => {
   try {
     return await wretch('/api/login').post({
@@ -32,7 +28,7 @@ export const signup = async (username: string, password: string) => {
 
 export const usernameAvailable = async (username: string) => {
   try {
-    const resp: IAvailable = await wretch('/api/available').post({
+    const resp = await wretch('/api/available').post({
       username,
     }).json()
     return resp.available

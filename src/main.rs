@@ -25,6 +25,7 @@ pub(crate) mod db;
 use self::app_env::AppEnv;
 use crate::db::exec::executor::DbExecutor;
 use actix::{Addr, SyncArbiter};
+use actix_web::middleware::identity::{CookieIdentityPolicy, IdentityService};
 use actix_web::{
     fs::NamedFile, fs::StaticFiles, http::Method, server, App, HttpRequest, Responder, State,
 };
@@ -32,6 +33,7 @@ use diesel::pg::PgConnection;
 use diesel::r2d2::ConnectionManager;
 use job_scheduler::{Job, JobScheduler};
 use r2d2::Pool;
+use rand::prelude::*;
 use slog::Drain;
 use std::fs::OpenOptions;
 use std::thread;
@@ -127,14 +129,27 @@ fn build_app(db_addr: &Addr<DbExecutor>, env: AppEnv) -> App<AppState> {
         AppEnv::Prod => StaticFiles::new("./frontend/build/static").unwrap(),
     };
 
+    let mut key = [0u8; 512];
+    thread_rng().fill(&mut key);
+    let mut cookie_policy = CookieIdentityPolicy::new(&key)
+        .max_age(time::Duration::weeks(26))
+        .name("username")
+        .same_site(cookie::SameSite::Strict);
+    cookie_policy = match env {
+        AppEnv::Local => cookie_policy.secure(false),
+        AppEnv::Prod => cookie_policy.secure(true),
+    };
+
     App::with_state(AppState {
         db_addr: db_addr.clone(),
         env,
     })
-    .resource("/api/signup", |res| res.method(Method::POST).f(api::signup))
+    .middleware(IdentityService::new(cookie_policy))
     .resource("/api/available", |res| {
         res.method(Method::POST).f(api::username_available)
     })
+    .resource("/api/login", |res| res.method(Method::POST).f(api::login))
+    .resource("/api/signup", |res| res.method(Method::POST).f(api::signup))
     .resource("/api/{tail:.*}", |res| {
         res.method(Method::GET)
             .f(|_r: &HttpRequest<AppState>| "api route not found")

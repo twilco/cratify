@@ -52,6 +52,8 @@ pub struct PeriodicSubscription {
     pub frequency: PeriodicSubscriptionFrequency,
 }
 
+// TODO: Remove this - adding it now just to suppress the annoying warning.
+#[allow(dead_code)]
 #[derive(Debug, Eq, PartialEq, Queryable)]
 #[table_name = "sent"]
 pub struct Sent {
@@ -69,6 +71,8 @@ pub struct SentVersion {
     pub crate_version: String,
 }
 
+// TODO: Remove this - adding it now just to suppress the annoying warning.
+#[allow(dead_code)]
 #[derive(Debug, Eq, PartialEq, Queryable)]
 #[table_name = "sent_means"]
 pub struct SentMeans {

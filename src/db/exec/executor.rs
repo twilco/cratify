@@ -16,6 +16,15 @@ impl Actor for DbExecutor {
     type Context = SyncContext<Self>;
 }
 
+impl Handler<AreCredentialsValid> for DbExecutor {
+    type Result = Result<bool, Error>;
+
+    fn handle(&mut self, msg: AreCredentialsValid, _: &mut Self::Context) -> Self::Result {
+        // return (UUID, bool) tuple for logging user uuid logged in successfully
+        Ok(true)
+    }
+}
+
 impl Handler<CreateUser> for DbExecutor {
     type Result = Result<User, Error>;
 
