@@ -2,7 +2,7 @@ use crate::app::error::CratifyError;
 use crate::app::error::DbError;
 use crate::app::error::ValidationError;
 use crate::db::exec::msg::*;
-use crate::db::models::{NewUser, User};
+use crate::db::model::{NewUser, User};
 use ::actix::prelude::*;
 use ::actix::Handler;
 use bcrypt::*;

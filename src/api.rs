@@ -1,6 +1,6 @@
 /// Where our API handlers go.
 use crate::app::error::{CratifyError, ValidationError};
-use crate::app::models::*;
+use crate::app::model::*;
 use crate::db::exec::msg::{AreCredentialsValid, CreateUser, IsUsernameAvailable};
 use crate::AppState;
 use actix_web::middleware::identity::RequestIdentity;

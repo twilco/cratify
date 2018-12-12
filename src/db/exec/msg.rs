@@ -1,5 +1,5 @@
 use crate::app::error::CratifyError;
-use crate::db::models::User;
+use crate::db::model::User;
 use ::actix::prelude::*;
 use failure::Error;
 

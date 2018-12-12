@@ -23,7 +23,7 @@ table! {
 
 table! {
     use diesel::sql_types::Uuid;
-    use crate::db::models::PeriodicSubscriptionFrequencyMapping;
+    use crate::db::model::PeriodicSubscriptionFrequencyMapping;
     periodic_subscriptions (periodic_subscription_id) {
         periodic_subscription_id -> Uuid,
         subscription_id -> Uuid,
@@ -51,7 +51,7 @@ table! {
 
 table! {
     use diesel::sql_types::Uuid;
-    use crate::db::models::MeansOfTransportationMapping;
+    use crate::db::model::MeansOfTransportationMapping;
     sent_means (sent_means_id) {
         sent_means_id -> Uuid,
         email_id -> Uuid,
@@ -71,7 +71,7 @@ table! {
 table! {
     use diesel::sql_types::Uuid;
     use diesel::sql_types::Text;
-    use crate::db::models::SubscriptionTypeMapping;
+    use crate::db::model::SubscriptionTypeMapping;
     subscriptions (subscription_id) {
         subscription_id -> Uuid,
         user_id -> Uuid,
