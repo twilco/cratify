@@ -1,3 +1,4 @@
+use crate::app::error::CratifyError;
 use crate::db::models::User;
 use ::actix::prelude::*;
 use failure::Error;
@@ -8,7 +9,7 @@ pub(crate) struct CreateUser {
 }
 
 impl Message for CreateUser {
-    type Result = Result<User, Error>;
+    type Result = Result<User, CratifyError>;
 }
 
 pub(crate) struct IsUsernameAvailable {
@@ -16,7 +17,7 @@ pub(crate) struct IsUsernameAvailable {
 }
 
 impl Message for IsUsernameAvailable {
-    type Result = Result<bool, Error>;
+    type Result = Result<bool, CratifyError>;
 }
 
 pub(crate) struct AreCredentialsValid {
@@ -25,5 +26,5 @@ pub(crate) struct AreCredentialsValid {
 }
 
 impl Message for AreCredentialsValid {
-    type Result = Result<bool, Error>;
+    type Result = Result<bool, CratifyError>;
 }

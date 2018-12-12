@@ -218,7 +218,7 @@ fn fulfill_subscriptions() {
     info!("attempting to retrieve or update crates.io index");
     match crates_index::Index::new::<&str>("_index".into()).retrieve_or_update() {
         Ok(_) => info!("crates.io index updated"),
-        Err(e) => error!("could not retrieve crates.io index - err: {}", e),
+        Err(e) => error!("could not retrieve crates.io index: {}", e),
     };
 
     // loop through each subscription, and fulfill if necessary

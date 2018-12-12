@@ -28,9 +28,9 @@ futures = "0.1"
 job_scheduler = "*"
 r2d2 = "0.8.3"
 rand = "0.6"
-serde = "1.0.80"
+serde = "1.0.81"
 serde_json = "1.0.33"
-serde_derive = "1.0.80"
+serde_derive = "1.0.81"
 slog = "2.4.1"
 slog-async = "2.3.0"
 slog-envlogger = "2.1.0"
@@ -55,5 +55,3 @@ path = "src/main.rs"
 [[bin]]
 name = "instrument"
 path = "src/instrument.rs"
-
-

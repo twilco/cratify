@@ -1,3 +1,6 @@
+use crate::app::error::CratifyError;
+use crate::app::error::DbError;
+use crate::app::error::ValidationError;
 use crate::db::exec::msg::*;
 use crate::db::models::{NewUser, User};
 use ::actix::prelude::*;
@@ -17,7 +20,7 @@ impl Actor for DbExecutor {
 }
 
 impl Handler<AreCredentialsValid> for DbExecutor {
-    type Result = Result<bool, Error>;
+    type Result = Result<bool, CratifyError>;
 
     fn handle(&mut self, msg: AreCredentialsValid, _: &mut Self::Context) -> Self::Result {
         // return (UUID, bool) tuple for logging user uuid logged in successfully
@@ -26,9 +29,15 @@ impl Handler<AreCredentialsValid> for DbExecutor {
 }
 
 impl Handler<CreateUser> for DbExecutor {
-    type Result = Result<User, Error>;
+    type Result = Result<User, CratifyError>;
 
     fn handle(&mut self, msg: CreateUser, _: &mut Self::Context) -> Self::Result {
+        if msg.username.is_empty() {
+            return Err(ValidationError::EmptyUsername.into());
+        } else if msg.password.is_empty() {
+            return Err(ValidationError::EmptyPassword.into());
+        }
+
         let hashed_password = hash(&msg.password, DEFAULT_COST)?;
         let new_user = NewUser {
             username: &msg.username,
@@ -38,29 +47,63 @@ impl Handler<CreateUser> for DbExecutor {
         use crate::db::schema::users;
         let new_user = diesel::insert_into(users::table)
             .values(&new_user)
-            .get_result(&self.0.get()?)
-            .expect("error saving new user");
+            .get_result(
+                &self
+                    .0
+                    .get()
+                    .map_err(|e| {
+                        return Err::<User, CratifyError>(
+                            DbError::ConnectionPool {
+                                cause: e,
+                                occurred_when: "getting conn for user creation".to_owned(),
+                            }
+                            .into(),
+                        );
+                    })
+                    .unwrap(),
+            )
+            .map_err(|e| {
+                return Err::<User, CratifyError>(
+                    DbError::ResultRetrieval {
+                        cause: e,
+                        occurred_when: "creating user".to_owned(),
+                    }
+                    .into(),
+                );
+            })
+            .unwrap();
 
         Ok(new_user)
     }
 }
 
 impl Handler<IsUsernameAvailable> for DbExecutor {
-    type Result = Result<bool, Error>;
+    type Result = Result<bool, CratifyError>;
 
     fn handle(&mut self, msg: IsUsernameAvailable, _: &mut Self::Context) -> Self::Result {
         use crate::db::schema::users;
         use crate::db::schema::users::dsl::*;
-        // TODO: This feels like a super awkward/verbose way to determine if the specified username
-        //       exists...there must be a better way, but I haven't been able to find it.
-        let mut username_exists_vec: Vec<bool> =
-            select(exists(users.filter(username.eq(msg.username))))
-                .get_results(&self.0.get()?)
-                .expect("couldn't determine if username exists");
+        let username_exists: bool = select(exists(users.filter(username.eq(msg.username))))
+            .first(
+                &self
+                    .0
+                    .get()
+                    .map_err(|e| {
+                        return DbError::ConnectionPool {
+                            cause: e,
+                            occurred_when: "getting conn for username existence query".to_owned(),
+                        };
+                    })
+                    .unwrap(),
+            )
+            .map_err(|e| {
+                return DbError::ResultRetrieval {
+                    cause: e,
+                    occurred_when: "determining existence of username".to_owned(),
+                };
+            })
+            .unwrap();
 
-        match username_exists_vec.len() {
-            n if n < 1 => bail!("zero results from username exists query"),
-            _ => Ok(!username_exists_vec.remove(0)), // position zero should have our 'exists' bool
-        }
+        Ok(!username_exists)
     }
 }
