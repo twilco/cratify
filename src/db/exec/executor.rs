@@ -11,7 +11,6 @@ use diesel::dsl::{exists, select};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::r2d2::ConnectionManager;
-use failure::{bail, Error};
 use r2d2::Pool;
 
 pub(crate) struct DbExecutor(pub(crate) Pool<ConnectionManager<PgConnection>>);

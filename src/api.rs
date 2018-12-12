@@ -4,7 +4,7 @@ use crate::app::model::*;
 use crate::db::exec::msg::{AreCredentialsValid, CreateUser, IsUsernameAvailable};
 use crate::AppState;
 use actix_web::middleware::identity::RequestIdentity;
-use actix_web::{AsyncResponder, Error, HttpMessage, HttpRequest, HttpResponse};
+use actix_web::{AsyncResponder, HttpMessage, HttpRequest, HttpResponse};
 use futures::future::Future;
 
 type ApiResponse = Box<Future<Item = HttpResponse, Error = CratifyError>>;
