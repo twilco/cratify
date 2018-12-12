@@ -3,6 +3,7 @@ use crate::app::error::DbError;
 use crate::app::error::ValidationError;
 use crate::db::exec::msg::*;
 use crate::db::model::{NewUser, User};
+use crate::db::schema::users;
 use ::actix::prelude::*;
 use ::actix::Handler;
 use bcrypt::*;
@@ -44,7 +45,6 @@ impl Handler<CreateUser> for DbExecutor {
             hashed_password: &hashed_password,
         };
 
-        use crate::db::schema::users;
         let new_user = diesel::insert_into(users::table)
             .values(&new_user)
             .get_result(
@@ -81,7 +81,6 @@ impl Handler<IsUsernameAvailable> for DbExecutor {
     type Result = Result<bool, CratifyError>;
 
     fn handle(&mut self, msg: IsUsernameAvailable, _: &mut Self::Context) -> Self::Result {
-        use crate::db::schema::users;
         use crate::db::schema::users::dsl::*;
         let username_exists: bool = select(exists(users.filter(username.eq(msg.username))))
             .first(
