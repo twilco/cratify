@@ -5,7 +5,7 @@ services:
 - docker
 cache: cargo
 before_script:
-- rustup component add rustfmt-preview
+- rustup component add rustfmt
 script:
 - cargo fmt --all -- --check && cargo test
 - docker-compose build app

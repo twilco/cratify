@@ -1,10 +1,10 @@
 /// Where our API handlers go.
-use crate::app::error::{CratifyError, ValidationError};
+use crate::app::error::{CratifyError, UserError};
 use crate::app::model::*;
 use crate::db::exec::msg::{AreCredentialsValid, CreateUser, IsUsernameAvailable};
 use crate::AppState;
 use actix_web::middleware::identity::RequestIdentity;
-use actix_web::{AsyncResponder, HttpMessage, HttpRequest, HttpResponse};
+use actix_web::{AsyncResponder, HttpMessage, HttpRequest, HttpResponse, ResponseError};
 use futures::future::Future;
 
 type ApiResponse = Box<Future<Item = HttpResponse, Error = CratifyError>>;
@@ -30,7 +30,7 @@ pub(crate) fn signup(req: &HttpRequest<AppState>) -> ApiResponse {
                         .and_then(|res| res.and_then(|_| Ok(HttpResponse::Ok().finish())))
                         .wait()
                     } else {
-                        Err(ValidationError::TakenUsername.into())
+                        Err(UserError::TakenUsername.into())
                     }
                 })
             })
@@ -70,15 +70,25 @@ pub(crate) fn login(req: &HttpRequest<AppState>) -> ApiResponse {
             })
             .from_err()
             .and_then(move |res| {
-                res.and_then(|login_successful| {
-                    if login_successful {
-                        req_clone.remember(lr.username);
-                        Ok(HttpResponse::Ok().finish())
-                    } else {
-                        Err(ValidationError::InvalidCredentials.into())
-                    }
+                res.and_then(|user| {
+                    // we only get here if the authentication was successful.  otherwise an error
+                    // is returned, and this `and_then` is skipped.
+                    info!("user '{}' logged in", user.user_id);
+                    req_clone.remember(user.user_id.to_string());
+                    Ok(HttpResponse::Ok().finish())
                 })
             })
         })
         .responder()
+}
+
+/// Log user out.
+pub(crate) fn logout(req: &HttpRequest<AppState>) -> HttpResponse {
+    if let Some(user_uuid) = req.identity() {
+        info!("user '{}' logged out", user_uuid);
+        req.forget();
+        HttpResponse::Ok().finish()
+    } else {
+        CratifyError::from(UserError::SuperfluousLogout).error_response()
+    }
 }

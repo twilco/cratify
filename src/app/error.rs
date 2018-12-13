@@ -19,7 +19,7 @@ pub(crate) enum CratifyError {
     EncryptionError { inner: BcryptError },
 
     #[fail(display = "{}", message)]
-    ValidationError { message: String },
+    UserError { message: String },
 }
 
 impl From<JsonPayloadError> for CratifyError {
@@ -44,9 +44,9 @@ impl From<DbError> for CratifyError {
     }
 }
 
-impl From<ValidationError> for CratifyError {
-    fn from(err: ValidationError) -> Self {
-        CratifyError::ValidationError {
+impl From<UserError> for CratifyError {
+    fn from(err: UserError) -> Self {
+        CratifyError::UserError {
             message: err.to_string(),
         }
     }
@@ -73,7 +73,7 @@ impl ResponseError for CratifyError {
                 error!("{}", inner);
                 HttpResponse::InternalServerError()
             }
-            CratifyError::ValidationError { .. } => {
+            CratifyError::UserError { .. } => {
                 // All request errors are autologged, and there is no additional "inner" information
                 // that would be helpful to know here, so no more logging required.
                 HttpResponse::BadRequest()
@@ -125,7 +125,7 @@ impl ErrorPayload {
 }
 
 #[derive(Debug, Clone, Fail)]
-pub(crate) enum ValidationError {
+pub(crate) enum UserError {
     #[fail(display = "empty username given")]
     EmptyUsername,
 
@@ -134,6 +134,10 @@ pub(crate) enum ValidationError {
 
     #[fail(display = "invalid credentials provided")]
     InvalidCredentials,
+
+    #[allow(dead_code)]
+    #[fail(display = "superfluos logout attempt")]
+    SuperfluousLogout,
 
     #[fail(display = "username already taken")]
     TakenUsername,

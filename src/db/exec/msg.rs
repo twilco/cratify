@@ -25,5 +25,5 @@ pub(crate) struct AreCredentialsValid {
 }
 
 impl Message for AreCredentialsValid {
-    type Result = Result<bool, CratifyError>;
+    type Result = Result<User, CratifyError>;
 }

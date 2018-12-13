@@ -129,11 +129,11 @@ fn build_app(db_addr: &Addr<DbExecutor>, env: AppEnv) -> App<AppState> {
         AppEnv::Prod => StaticFiles::new("./frontend/build/static").unwrap(),
     };
 
-    let mut key = [0u8; 512];
+    let mut key = [0u8; 256];
     thread_rng().fill(&mut key);
     let mut cookie_policy = CookieIdentityPolicy::new(&key)
         .max_age(time::Duration::weeks(26))
-        .name("username")
+        .name("user_uuid")
         .same_site(cookie::SameSite::Strict);
     cookie_policy = match env {
         AppEnv::Local => cookie_policy.secure(false),

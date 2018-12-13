@@ -1,6 +1,6 @@
 use crate::app::error::CratifyError;
 use crate::app::error::DbError;
-use crate::app::error::ValidationError;
+use crate::app::error::UserError;
 use crate::db::exec::msg::*;
 use crate::db::model::{NewUser, User};
 use crate::db::schema::users;
@@ -20,11 +20,50 @@ impl Actor for DbExecutor {
 }
 
 impl Handler<AreCredentialsValid> for DbExecutor {
-    type Result = Result<bool, CratifyError>;
+    type Result = Result<User, CratifyError>;
 
+    /// If credentials are valid return our User.  Otherwise, return either the
+    /// [UserError::InvalidCredentials](enum.UserError.html) into a [CratifyError](enum.CratifyError.html)
+    /// or some other, likely unexpected, error into a [CratifyError](enum.CratifyError.html).
     fn handle(&mut self, msg: AreCredentialsValid, _: &mut Self::Context) -> Self::Result {
-        // return (UUID, bool) tuple for logging user uuid logged in successfully
-        Ok(true)
+        use crate::db::schema::users::dsl::*;
+        match users.filter(username.eq(msg.username)).first::<User>(
+            &self
+                .0
+                .get()
+                .map_err(|e| {
+                    return DbError::ConnectionPool {
+                        cause: e,
+                        occurred_when: "retrieving user to validate credentials".to_owned(),
+                    };
+                })
+                .unwrap(),
+        ) {
+            Ok(user) => {
+                match verify(&msg.password, &user.hashed_password) {
+                    Ok(matches) => {
+                        if matches {
+                            return Ok(user);
+                        } else {
+                            return Err(UserError::InvalidCredentials.into());
+                        }
+                    }
+                    Err(e) => return Err(CratifyError::EncryptionError { inner: e }),
+                };
+            }
+            Err(err) => match err {
+                diesel::result::Error::NotFound => {
+                    return Err(UserError::InvalidCredentials.into());
+                }
+                _ => {
+                    return Err(DbError::ResultRetrieval {
+                        cause: err,
+                        occurred_when: "retrieving user to validate credentials".to_owned(),
+                    }
+                    .into());
+                }
+            },
+        }
     }
 }
 
@@ -33,9 +72,9 @@ impl Handler<CreateUser> for DbExecutor {
 
     fn handle(&mut self, msg: CreateUser, _: &mut Self::Context) -> Self::Result {
         if msg.username.is_empty() {
-            return Err(ValidationError::EmptyUsername.into());
+            return Err(UserError::EmptyUsername.into());
         } else if msg.password.is_empty() {
-            return Err(ValidationError::EmptyPassword.into());
+            return Err(UserError::EmptyPassword.into());
         }
 
         let hashed_password = hash(&msg.password, DEFAULT_COST)?;
