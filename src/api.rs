@@ -12,6 +12,7 @@ type ApiResponse = Box<Future<Item = HttpResponse, Error = CratifyError>>;
 /// Handle a user signup request.
 pub(crate) fn signup(req: &HttpRequest<AppState>) -> ApiResponse {
     let db = req.state().db_addr.clone();
+    let req_clone = req.clone();
     req.json()
         .from_err()
         .and_then(move |sr: SignupRequest| {
@@ -20,14 +21,21 @@ pub(crate) fn signup(req: &HttpRequest<AppState>) -> ApiResponse {
             })
             .from_err()
             .and_then(move |res| {
-                res.and_then(|available| {
+                res.and_then(move |available| {
                     if available {
                         db.send(CreateUser {
                             username: sr.username.clone(),
                             password: sr.password.clone(),
                         })
                         .from_err()
-                        .and_then(|res| res.and_then(|_| Ok(HttpResponse::Ok().finish())))
+                        .and_then(|res| res.and_then(|new_user| {
+                            if let Some(user_id) = req_clone.identity() {
+                                info!("signup request received while user '{}' logged in.  logging them out and logging in new user '{}'", user_id, new_user.user_id)
+                            }
+                            req_clone.forget();
+                            req_clone.remember(new_user.user_id.to_string());
+                            Ok(HttpResponse::Ok().finish())
+                        }))
                         .wait()
                     } else {
                         Err(UserError::TakenUsername.into())
