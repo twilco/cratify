@@ -10,7 +10,7 @@ export const login = async (username: string, password: string) => {
     }).json()
   } catch (e) {
     console.error(`error attempting to login: ${e}`)
-    return { error: e }
+    throw e
   }
 }
 
@@ -22,7 +22,7 @@ export const signup = async (username: string, password: string) => {
     }).json()
   } catch (e) {
     console.error(`error attempting to sign up: ${e}`)
-    return { error: e }
+    throw e
   }
 }
 
@@ -34,6 +34,6 @@ export const usernameAvailable = async (username: string) => {
     return resp.available
   } catch (e) {
     console.error(`error attempting to determine if username available: ${e}`)
-    return { error: e }
+    throw e
   }
 }
