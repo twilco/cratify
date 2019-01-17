@@ -40,5 +40,6 @@
     "react-test-renderer": "^16.6.0",
     "tslint-config-airbnb": "^5.11.0",
     "typescript": "^3.2.1"
-  }
+  },
+  "proxy": "http://0.0.0.0:8080"
 }
