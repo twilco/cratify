@@ -7,7 +7,7 @@ Button,
 Input,
 } from 'reactstrap'
 import styled from 'styled-components'
-import { signup, usernameAvailable } from '../api-sdk/sdk'
+import { extractErrMessage, signup, usernameAvailable } from '../api-sdk/sdk'
 
 const ContentContainer = styled.div`
   text-align: center;
@@ -28,18 +28,25 @@ const ValidationMessage = styled.div`
   margin-top: 0px !important;
 `
 
+const FormErrorMessage = styled.div`
+  margin-top: 0px !important;
+  margin-bottom: -19px !important;
+  display: block;
+`
+
 interface IProps {
   t: TranslationFunction
 }
 
 interface IState {
   confirmPassword: string,
+  formErrorMessage: string,
   password: string,
   passwordsClean: boolean,
   passwordsMatch: boolean,
+  username: string,
   usernameClean: boolean,
   usernameTaken: boolean,
-  username: string,
 }
 
 export default class Signup extends React.Component<IProps, IState> {
@@ -58,6 +65,7 @@ export default class Signup extends React.Component<IProps, IState> {
 
     this.state = {
       confirmPassword: '',
+      formErrorMessage: '',
       password: '',
       passwordsClean: true,
       passwordsMatch: true,
@@ -113,6 +121,11 @@ export default class Signup extends React.Component<IProps, IState> {
             >
               { t('sign-up') }
             </Button>
+            { this.state.formErrorMessage &&
+              <FormErrorMessage className="invalid-feedback">
+                oops, something went wrong. { this.state.formErrorMessage }
+              </FormErrorMessage>
+            }
           </ContentContainer>
         </div>
       </div>
@@ -163,14 +176,23 @@ export default class Signup extends React.Component<IProps, IState> {
     this.debouncedAvailabiltyCheck(evt.target.value)
   }
 
+  // TODO: what if someone gives us a "bad" string?
   private signupClicked = async () => {
     if (this.formIsValid()) {
-      if (await usernameAvailable(this.state.username)) {
-        const resp = await signup(this.state.username, this.state.password)
-        console.log(resp)
-      } else {
+      try {
+        if (await usernameAvailable(this.state.username)) {
+          await signup(this.state.username, this.state.password).res()
+          // redirect to logged in state (and log user in)
+        } else {
+          this.setState({
+            formErrorMessage: '',
+            usernameTaken: true,
+          })
+        }
+      } catch (e) {
+        console.error(`error attempting to sign up: ${e}`)
         this.setState({
-          usernameTaken: true,
+          formErrorMessage: extractErrMessage(e),
         })
       }
     }

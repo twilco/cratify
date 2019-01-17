@@ -109,14 +109,12 @@ pub(crate) enum DbError {
 /// JSON error payload.
 #[derive(Clone, Debug, Serialize)]
 pub(crate) struct ErrorPayload {
-    message: String,
+    msg: String,
 }
 
 impl ErrorPayload {
     pub fn from_error(e: &CratifyError) -> Self {
-        Self {
-            message: e.to_string(),
-        }
+        Self { msg: e.to_string() }
     }
 
     pub fn to_json(&self) -> String {
