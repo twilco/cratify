@@ -33,7 +33,6 @@ use diesel::pg::PgConnection;
 use diesel::r2d2::ConnectionManager;
 use job_scheduler::{Job, JobScheduler};
 use r2d2::Pool;
-use rand::prelude::*;
 use slog::Drain;
 use std::fs::OpenOptions;
 use std::thread;
@@ -129,12 +128,14 @@ fn build_app(db_addr: &Addr<DbExecutor>, env: AppEnv) -> App<AppState> {
         AppEnv::Prod => StaticFiles::new("./frontend/build/static").unwrap(),
     };
 
-    let mut key = [0u8; 256];
-    thread_rng().fill(&mut key);
-    let mut cookie_policy = CookieIdentityPolicy::new(&key)
-        .max_age(time::Duration::weeks(26))
-        .name("user_uuid")
-        .same_site(cookie::SameSite::Strict);
+    let mut cookie_policy = CookieIdentityPolicy::new(
+        &std::env::var("COOKIE_KEY")
+            .expect("couldn't get COOKIE_KEY from env")
+            .into_bytes(),
+    )
+    .max_age(time::Duration::weeks(26))
+    .name("user_uuid")
+    .same_site(cookie::SameSite::Strict);
     cookie_policy = match env {
         AppEnv::Local => cookie_policy.secure(false),
         AppEnv::Prod => cookie_policy.secure(true),
