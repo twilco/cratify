@@ -182,7 +182,7 @@ export default class Signup extends React.Component<IProps, IState> {
       try {
         if (await usernameAvailable(this.state.username)) {
           await signup(this.state.username, this.state.password).res()
-          // redirect to logged in state (and log user in)
+          window.location.replace('/subscriptions')
         } else {
           this.setState({
             formErrorMessage: '',
