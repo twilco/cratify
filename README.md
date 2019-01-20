@@ -1,6 +1,5 @@
 # Cratify 
-
-[![Build Status](https://img.shields.io/travis-ci/twilco/cratify.svg?branch=master&style=flat-square)](https://travis-ci.org/twilco/cratify)
+[![Build Status](https://travis-ci.org/twilco/cratify.svg?branch=master)](https://travis-ci.org/twilco/cratify)
 
 Want to know when another crate depends on yours?  We can notify (_cratify!_) you when this happens.
 
