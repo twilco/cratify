@@ -6,7 +6,7 @@ import {
   Input,
 } from 'reactstrap'
 import styled from 'styled-components'
-import { login } from '../api-sdk/sdk'
+import { extractErrMessage, login } from '../api-sdk/sdk'
 
 const ContentContainer = styled.div`
   text-align: center;
@@ -22,11 +22,18 @@ const StyledInput = styled(Input)`
   border-color: 1px solid #ced4da;
 `
 
+const FormErrorMessage = styled.div`
+  margin-top: 0px !important;
+  margin-bottom: -19px !important;
+  display: block;
+`
+
 interface IProps {
   t: TranslationFunction
 }
 
 interface IState {
+  formErrorMessage: string,
   password: string,
   username: string,
 }
@@ -36,6 +43,7 @@ export default class Login extends React.Component<IProps, IState> {
     super(props)
 
     this.state = {
+      formErrorMessage: '',
       password: '',
       username: '',
     }
@@ -67,6 +75,11 @@ export default class Login extends React.Component<IProps, IState> {
             >
               { t('log-in') }
             </Button>
+            { this.state.formErrorMessage &&
+              <FormErrorMessage className="invalid-feedback">
+                oops, something went wrong. { this.state.formErrorMessage }
+              </FormErrorMessage>
+            }
           </ContentContainer>
         </div>
       </div>
@@ -90,7 +103,15 @@ export default class Login extends React.Component<IProps, IState> {
 
   private loginClicked = async () => {
     if (this.formIsValid()) {
-      console.log(await login(this.state.username, this.state.password))
+      try {
+        console.log(await login(this.state.username, this.state.password))
+        window.location.replace('/subscriptions')
+      } catch (e) {
+        console.error(`error attempting to login: ${e}`)
+        this.setState({
+          formErrorMessage: extractErrMessage(e),
+        })
+      }
     }
   }
 }

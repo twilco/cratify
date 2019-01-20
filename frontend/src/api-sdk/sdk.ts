@@ -3,34 +3,24 @@ import 'whatwg-fetch'
 import wretch from 'wretch'
 
 export const login = async (username: string, password: string) => {
-  try {
-    return await wretch('/api/login').post({
-      password,
-      username,
-    }).json()
-  } catch (e) {
-    console.error(`error attempting to login: ${e}`)
-    throw e
-  }
-}
-
-export const signup = (username: string, password: string) => {
-  return wretch('/api/signup').post({
+  return await wretch('/api/login').post({
     password,
     username,
-  })
+  }).res()
+}
+
+export const signup = async (username: string, password: string) => {
+  return await wretch('/api/signup').post({
+    password,
+    username,
+  }).res()
 }
 
 export const usernameAvailable = async (username: string) => {
-  try {
-    const resp = await wretch('/api/available').post({
-      username,
-    }).json()
-    return resp.available
-  } catch (e) {
-    console.error(`error attempting to determine if username available: ${e}`)
-    throw e
-  }
+  const resp = await wretch('/api/available').post({
+    username,
+  }).json()
+  return resp.available
 }
 
 /**

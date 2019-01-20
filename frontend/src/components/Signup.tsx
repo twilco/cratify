@@ -176,12 +176,11 @@ export default class Signup extends React.Component<IProps, IState> {
     this.debouncedAvailabiltyCheck(evt.target.value)
   }
 
-  // TODO: what if someone gives us a "bad" string?
   private signupClicked = async () => {
     if (this.formIsValid()) {
       try {
         if (await usernameAvailable(this.state.username)) {
-          await signup(this.state.username, this.state.password).res()
+          await signup(this.state.username, this.state.password)
           window.location.replace('/subscriptions')
         } else {
           this.setState({
