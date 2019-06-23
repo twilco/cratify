@@ -1,7 +1,13 @@
 # Cratify 
 [![Build Status](https://travis-ci.org/twilco/cratify.svg?branch=master)](https://travis-ci.org/twilco/cratify)
 
-Want to know when another crate depends on yours?  We can notify (_cratify!_) you when this happens.
+Want to know when another crate depends on yours?  We can notify (_cratify!_) you when this happens.  Here is a taste of some of Cratify's planned functionality:
+
+* Periodic summary or immediate notification when crate(s) of your choice gain a new dependent crate.  Are you a crate maintainer who wants to know how many crates depend on each version of your crate?  We can do that!
+* Periodic summary or immediate notification when crate(s) of your choice get a version bump.
+* Interesting trivia about your crate subscriptions.  How many commits went into that last crate release?  How many total downloads do your crates have across all versions?  What is the average time between release for your crates?
+
+Cratify is currently incomplete.  After launch, this README will be updated with a link to the site.  Until then, you can see Cratify by running it locally - check out the [developer guide](docs/developer-guide.md) to get started.
 
 ## How does it work?
 
